@@ -33,18 +33,10 @@ export function DashboardSidebar() {
 
     const auth = useAuth();
 
-    const loginEmail = () => {
-        auth?.loginEmail()
-            .then(() => {
-                console.log("logged in!");
-            })
-            .catch(() => {
-                console.log("Something went wrong");
-            })
-    };
 
     const logout = () => {
-        auth?.loginEmail()
+        console.log(auth?.currentUser)
+        auth?.logout()
             .then(() => {
                 console.log("logged out!");
             })
@@ -97,13 +89,13 @@ export function DashboardSidebar() {
                                         <div className="flex items-center gap-3 px-4 py-2 w-full">
                                             <User className="h-5 w-5 flex-shrink-0" />
                                             <span className="group-data-[collapsible=icon]:hidden text-sm truncate">
-                                                {auth?.currentUser?.displayName}
+                                                {auth?.currentUser?.email}
                                             </span>
                                         </div>
                                     </SidebarMenuButton>
                                 </TooltipTrigger>
                                 <TooltipContent side="right" className="group-data-[state=expanded]:hidden">
-                                    {auth?.currentUser?.displayName}
+                                    {auth?.currentUser?.email}
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -113,7 +105,7 @@ export function DashboardSidebar() {
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <SidebarMenuButton asChild>
-                                        <button onClick={() => console.log('Logout clicked')} className="flex items-center gap-3 px-4 py-2 w-full">
+                                        <button onClick={logout} className="flex items-center gap-3 px-4 py-2 w-full">
                                             <LogOut className="h-5 w-5 flex-shrink-0" />
                                             <span className="group-data-[collapsible=icon]:hidden">Logout</span>
                                         </button>
