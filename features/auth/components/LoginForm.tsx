@@ -40,8 +40,6 @@ const LoginForm = () => {
     const auth = useAuth();
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // This is where you would typically handle authentication
-        console.log(values);
     
         auth?.loginEmail({ email: values.email, password: values.password })
             .then(() => {
@@ -49,7 +47,7 @@ const LoginForm = () => {
                 if (values.email.includes('admin')) {
                     router.push('/admin/dashboard');
                 } else {
-                    router.push('/dashboard'); // Assuming there's a user dashboard
+                    router.push('/'); // Assuming there's a user dashboard
                 }
             })
             .catch((error: any) => {
