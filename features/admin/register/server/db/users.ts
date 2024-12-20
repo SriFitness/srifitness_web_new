@@ -1,10 +1,8 @@
-import { functions } from '@/firebase/client';
-
-import { httpsCallable } from 'firebase/functions';
+import Cookies from "js-cookie"; 
 
 type dataType = {
-  first: string;
-  second: string;
+  firstName: string;
+  secondName: string;
   email: string;
   phone: string;
   location: string;
@@ -13,17 +11,32 @@ type dataType = {
 }
 
 export const createUser = async (data: dataType) => {
-  if(!functions){
-    return
-  }
-  const createUserFn = httpsCallable(functions, 'createUser');
-  
   try {
-    const result = await createUserFn(data);
-    console.log(result.data.message);
+    const response = await fetch('/api/users/create-user', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${Cookies.get("firebaseIdToken")}`, 
+      },
+      body: JSON.stringify(data),
+    });
+    if(response.ok){
+      return {
+        success: true,
+        message: `${data.email} was created successfully.`,
+      };
+    }
+    return {
+      success: false,
+      message: `An error occurred while creating the user. Check whether the user has been already created!`,
+    };
+    
   } catch (error) {
-    console.log(error);
+    console.error('Error creating user:', error);
+    return {
+      success: false,
+      message: 'An error occurred while creating the user. Check whether the user has been already created!',
+    };
   }
-}
-
+};
 

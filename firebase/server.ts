@@ -1,3 +1,5 @@
+//root/firebase/server.ts
+
 import { initializeApp, ServiceAccount, cert, getApps } from 'firebase-admin/app';
 import serviceAccount from './serviceAccount.json'
 import { Firestore, getFirestore } from 'firebase-admin/firestore'

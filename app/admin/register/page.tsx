@@ -5,7 +5,7 @@ import RegisterForm from "@/features/admin/register/components/RegisterForm";
 
 const RegisterAdminPage = () => {
     return (
-        <div><RegisterForm /></div>
+        <div>register page</div>
     )
 }
 export default RegisterAdminPage

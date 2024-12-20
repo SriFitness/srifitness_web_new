@@ -1,10 +1,16 @@
 //root/app/admin/users/page.tsx
 
+import UserTable from '@/features/admin/users/components/UserTable'
 import React from 'react'
+
+
+
+
 
 const UsersAdminPage = () => {
     return (
-        <div>UsersAdminPage</div>
+        <UserTable />
+
     )
 }
 export default UsersAdminPage

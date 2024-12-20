@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, LayoutDashboard, UserPlus, Dumbbell, CreditCard, Store, Radio, LogOut, User } from 'lucide-react'
+import { Users, LayoutDashboard, UserPlus, Dumbbell, CreditCard, Store, Radio, LogOut, User, Replace } from 'lucide-react'
 import {
     Sidebar,
     SidebarContent,
@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/sidebar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from 'next/link'
-import { useAuth } from '@/components/auth-provider'
+import { useAuth } from '@/components/providers/auth-provider'
+import { useRouter } from 'next/navigation'
 
 const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
@@ -32,16 +33,17 @@ const navItems = [
 export function DashboardSidebar() {
 
     const auth = useAuth();
+    const router = useRouter()
+
 
 
     const logout = () => {
-        console.log(auth?.currentUser)
         auth?.logout()
             .then(() => {
-                console.log("logged out!");
+                router.push('/');
             })
-            .catch(() => {
-                console.log("Something went wrong");
+            .catch((error) => {
+                console.log(`error: ${error}`);
             })
     };
 

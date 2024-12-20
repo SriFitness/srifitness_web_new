@@ -6,6 +6,7 @@ export async function GET(
     request: NextRequest,
     { params }: { params: { userId: string } }
 ) {
+    const { userId } = await params;
     try {
         if (!firestore)
             return new NextResponse("Internal Error", { status: 500 });
@@ -23,10 +24,9 @@ export async function GET(
                 console.log(error);
             }
 
-        console.log(params.userId)
         const userDoc = await firestore
             .collection('users')
-            .doc(params.userId)
+            .doc(userId)
             .get();
 
 
@@ -35,13 +35,19 @@ export async function GET(
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
 
+
         // Get user data and check the role
         const userData = userDoc.data();
         if (!userData || !userData.role) {
             return NextResponse.json({ role: 'user' }, { status: 200 }); // Default role is "user"
         }
 
+        // Only admin or user can delete user info
+        const valid = user?.uid === userId || userData.role === 'admin';
+        if (!valid) return new NextResponse("Unauthorized", { status: 401 });
+
         return NextResponse.json({ role: userData.role }, { status: 200 });
+        
     } catch (error) {
         console.log(error)
         return new NextResponse("Internal Error", { status: 500 });

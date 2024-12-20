@@ -1,10 +1,27 @@
-const express = require("express");
-const cors = require("cors");
+import * as admin from "firebase-admin";
+import { onCall, CallableRequest } from "firebase-functions/v2/https";
+import { createUser, CreateUserData } from "./user/createUser";
+import { getUser, GetUserData } from "./user/getUser";
+import { updateUserRole, UpdateUserRoleData } from "./user/updateUserRole";
+import { deleteUser, DeleteUserData } from "./user/deleteUser";
 
-const app = express();
+if (admin.apps.length === 0) {
+  admin.initializeApp();
+}
 
-app.use(cors( {origin: true}));
+export const createUserFunction = onCall((request: CallableRequest<CreateUserData>) =>
+  createUser(request.data, request.auth)
+);
 
-const {createUser} = require("./callableFunctions/UserCrud");
+export const getUserFunction = onCall((request: CallableRequest<GetUserData>) =>
+  getUser(request.data, request.auth)
+);
 
-exports.createUser = createUser;
+export const updateUserRoleFunction = onCall((request: CallableRequest<UpdateUserRoleData>) =>
+  updateUserRole(request.data, request.auth)
+);
+
+export const deleteUserFunction = onCall((request: CallableRequest<DeleteUserData>) =>
+  deleteUser(request.data, request.auth)
+);
+

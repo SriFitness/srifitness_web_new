@@ -1,3 +1,5 @@
+//root/features/admin/register/components/RegisterForm.tsx
+
 "use client"
 
 import React, { useState } from 'react'
@@ -15,7 +17,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useAuth } from '@/components/auth-provider'
 import {
     Select,
     SelectContent,
@@ -25,13 +26,14 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select'
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
+import { createUser } from '@/features/admin/register/server/actions/users'
 
 const formSchema = z.object({
     firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
     lastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
     email: z.string().email({ message: "Please enter a valid email address." }),
-    phoneNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: "Please enter a valid phone number." }),
+    phoneNumber: z.string().regex(/^(?:\+94\d{9}|0\d{9})$/, { message: "Please enter a valid phone number." }),
     password: z.string().min(8, { message: "Password must be at least 8 characters." }),
     confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters." }),
     city: z.string().nonempty({ message: "Please select a city." }),
@@ -63,51 +65,59 @@ const RegisterForm = () => {
         },
     })
 
-    const auth = useAuth();
+    const { reset } = form;
+
+    const clearForm = () => {
+        reset();
+    }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         if (!isEmailVerified) {
-            toast({
-                title: "Email not verified",
-                description: "Please verify your email before submitting the form.",
-                variant: "destructive",
-            });
+            toast.error("Please verify your email before submitting the form.")
             return;
         }
 
         try {
-            await auth?.createUser({
-                email: values.email,
-                password: values.password,
-                firstName: values.firstName,
-                lastName: values.lastName,
-                phoneNumber: values.phoneNumber,
-                city: values.city,
-                membershipPlan: values.membershipPlan,
-            });
-            toast({
-                title: "Registration successful",
-                description: "Your account has been created.",
-            });
-            // Handle successful user creation (e.g., redirect to login page)
+
+            toast.promise(
+                new Promise<{ name: string }>(async (resolve, reject) => {
+                    const response = await createUser({
+                        email: values.email,
+                        password: values.password,
+                        firstName: values.firstName,
+                        secondName: values.lastName,
+                        phone: values.phoneNumber,
+                        location: values.city,
+                        membership: values.membershipPlan,
+                    });
+            
+                    if (response.success) {
+                        clearForm();
+                        resolve({ name: values.email }); // Pass the name to success
+                    } else {
+                        reject(response.message); // Pass an error message for the error
+                    }
+                }),
+                {
+                    loading: 'Loading...',
+                    success: (data) => {
+                        return `${data.name} has been successfully added!`; // Customize success message
+                    },
+                    error: (error) => {
+                        return `Error: ${error}`; // Customize error message
+                    },
+                }
+            );
         } catch (error: any) {
             console.error("User creation failed", error);
-            toast({
-                title: "Registration failed",
-                description: error.message || "An error occurred during registration.",
-                variant: "destructive",
-            });
+            toast.error(`${error.message || "An error occurred during registration."}`)
         }
     }
 
     const verifyEmail = async () => {
         const email = form.getValues("email");
         if (!email) {
-            toast({
-                title: "Email required",
-                description: "Please enter an email address to verify.",
-                variant: "destructive",
-            });
+            toast.error("Please enter an email address to verify.")
             return;
         }
 
@@ -116,16 +126,9 @@ const RegisterForm = () => {
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
             setIsEmailVerified(true);
-            toast({
-                title: "Email verified",
-                description: "The email address has been verified.",
-            });
+            toast.success("The email address has been verified.")
         } catch (error) {
-            toast({
-                title: "Verification failed",
-                description: "Unable to verify the email address.",
-                variant: "destructive",
-            });
+            toast.error("Unable to verify the email address.")
         }
     };
 
@@ -281,6 +284,7 @@ const RegisterForm = () => {
                 </div>
             </form>
         </Form>
+
     )
 }
 

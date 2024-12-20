@@ -1,0 +1,92 @@
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export async function middleware(request: NextRequest) {
+  const authToken = request.cookies.get("firebaseIdToken")?.value
+
+  // If there's no auth token, redirect to sign-in
+  if (!authToken) {
+    return NextResponse.redirect(new URL('/sign-in', request.url))
+  }
+
+  // For admin routes, verify admin or subadmin access
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    try {
+      // Verify admin status using an API route
+      const verifyResponse = await fetch(`${request.nextUrl.origin}/api/auth/verify-admin`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      })
+
+      if (!verifyResponse.ok) {
+        // Generate a temporary token for the unauthorized redirect
+        const tempToken = crypto.randomUUID()
+        
+        // Create a response that redirects
+        const response = NextResponse.redirect(
+          new URL(`/unauthorized?token=${tempToken}`, request.url)
+        )
+        
+        // Set the token as a cookie
+        response.cookies.set('unauthorizedRedirectToken', tempToken, { 
+          maxAge: 60,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
+        })
+
+        return response
+      }
+
+      const { role } = await verifyResponse.json()
+
+      // Check for restricted subadmin routes
+      if (role === 'subadmin') {
+        const restrictedRoutes = ['/admin/users', '/admin/workout', '/admin/marketplace'] // Add more restricted routes as needed
+        if (restrictedRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
+          return NextResponse.redirect(new URL('/admin/unauthorized', request.url))
+        }
+      }
+
+      return NextResponse.next()
+    } catch (error) {
+      console.error("Error in middleware:", error)
+      return NextResponse.redirect(new URL('/sign-in', request.url))
+    }
+  }
+
+  // For user profile routes
+  if (request.nextUrl.pathname.startsWith('/user/')) {
+    try {
+      const userId = request.nextUrl.pathname.split('/')[2] // Assuming the URL is like /user/:userId
+      const verifyResponse = await fetch(`${request.nextUrl.origin}/api/auth/verify-user`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'X-Requested-User-Id': userId
+        }
+      })
+
+      if (!verifyResponse.ok) {
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
+      }
+
+      return NextResponse.next()
+    } catch (error) {
+      console.error("Error in middleware:", error)
+      return NextResponse.redirect(new URL('/sign-in', request.url))
+    }
+  }
+
+  // For non-admin routes, continue
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: [
+    '/admin/:path*',
+    '/user/:path*',
+    '/unauthorized'
+  ]
+}
+

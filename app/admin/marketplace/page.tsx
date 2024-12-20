@@ -1,10 +1,6 @@
-//root/app/admin/marketplace/page.tsx
+import { MarketplaceDashboard } from "@/features/admin/marketplace/components/MarketplaceDashboard"
 
-import React from 'react'
-
-const MarketplaceAdminPage = () => {
-    return (
-        <div>MarketplaceAdminPage</div>
-    )
+export default function MarketplaceAdminPage() {
+  return <MarketplaceDashboard />
 }
-export default MarketplaceAdminPage
+
