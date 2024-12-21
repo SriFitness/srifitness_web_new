@@ -123,9 +123,12 @@ const data = {
       icon: Store,
       items: [
         {
-          title: "General",
+          title: "Dashboard",
           url: "/admin/marketplace",
-        },
+        },{
+          title: "Products",
+          url: "/admin/marketplace/products"
+        }
       ],
     },
     {
