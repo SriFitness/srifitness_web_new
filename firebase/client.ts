@@ -3,6 +3,8 @@
 import { getApps, initializeApp } from "firebase/app"
 import { Auth, getAuth } from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator, Functions } from "firebase/functions";
+import { getStorage, FirebaseStorage } from "firebase/storage";
+import { Firestore, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDOATdDVy2tMkbiha76_zK_EkniEjTh9Lw",
@@ -17,18 +19,24 @@ const firebaseConfig = {
 
 let auth: Auth | undefined = undefined;
 let functions: Functions | undefined = undefined;
+let storage: FirebaseStorage | undefined = undefined;
+let firestore: Firestore | undefined = undefined;
 
 const currentApps = getApps();
 if ( currentApps.length <= 0){
     const app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     functions = getFunctions(app);
+    storage = getStorage(app);
+    firestore = getFirestore(app);
 
     if (process.env.NODE_ENV === "development") {
         connectFunctionsEmulator(functions, "localhost", 5001);
     }
 } else {
     auth = getAuth(currentApps[0])
+    storage = getStorage(currentApps[0]);
+    firestore = getFirestore(currentApps[0]);
 }
 
-export { auth, functions };
+export { auth, functions, storage, firestore };
