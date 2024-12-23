@@ -1,12 +1,18 @@
+//root/middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get("firebaseIdToken")?.value
+  const tokenExpiration = request.cookies.get("tokenExpiration")?.value
 
-  // If there's no auth token, redirect to sign-in
-  if (!authToken) {
-    return NextResponse.redirect(new URL('/sign-in', request.url))
+  // Check if token is expired
+  if (!authToken || !tokenExpiration || new Date().getTime() > parseInt(tokenExpiration)) {
+    // Clear expired cookies
+    const response = NextResponse.redirect(new URL('/sign-in', request.url))
+    response.cookies.delete("firebaseIdToken")
+    response.cookies.delete("tokenExpiration")
+    return response
   }
 
   // For admin routes, verify admin or subadmin access

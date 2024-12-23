@@ -12,7 +12,7 @@ import { LoadingProvider } from "@/components/providers/LoadingContext"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-    title: "Admin Dashboard",
+    title: "Sri Fitness",
     description: "Next.js 15 Admin Dashboard",
 }
 

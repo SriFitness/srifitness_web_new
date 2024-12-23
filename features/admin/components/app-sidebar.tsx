@@ -19,10 +19,10 @@ import {
   Radio
 } from "lucide-react"
 
-import { NavMain } from "@/features/admin/components2/nav-main"
-import { NavProjects } from "@/features/admin/components2/nav-projects"
-import { NavUser } from "@/features/admin/components2/nav-user"
-import { TeamSwitcher } from "@/features/admin/components2/team-switcher"
+import { NavMain } from "@/features/admin/components/nav-main"
+import { NavProjects } from "@/features/admin/components/nav-projects"
+import { NavUser } from "@/features/admin/components/nav-user"
+import { TeamSwitcher } from "@/features/admin/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,

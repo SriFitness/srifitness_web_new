@@ -1,3 +1,11 @@
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+    return {
+        title: "Log in with Sri Fitness account",
+        description: "Manage your account with Sri Fitness Auth Portal",
+    };
+}
 export default async function AuthLayout({
                                              children,
                                          }: {

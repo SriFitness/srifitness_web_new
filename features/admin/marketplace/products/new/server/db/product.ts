@@ -1,3 +1,5 @@
+//root/features/admin/marketplace/products/new/server/db/product.ts
+
 import Cookies from "js-cookie";
 
 type FormDataType = {

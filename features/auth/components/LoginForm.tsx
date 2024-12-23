@@ -58,21 +58,36 @@ const LoginForm = () => {
                 setProgress((i + 1) * 20)
             }
 
-            await auth?.loginEmail({ email: values.email, password: values.password })
+            const response = await auth?.loginEmail({ email: values.email, password: values.password })
 
-            setProgress(100)
-            toast({
-                title: "Login Successful",
-                description: "You have been successfully logged in.",
-                variant: "success",
-            })
-
-            // Mock authentication logic
-            if (values.email.includes('admin')) {
-                router.push('/admin/dashboard');
+            if (response) {
+                if (values.email.includes('admin')) {
+                    router.push('/admin/dashboard');
+                    setProgress(100)
+                    toast({
+                        title: "Login Successful",
+                        description: "You have been successfully logged in.",
+                        variant: "success",
+                    })
+                } else {
+                    router.push('/'); // Assuming there's a user dashboard
+                    setProgress(100)
+                    toast({
+                        title: "Login Successful",
+                        description: "You have been successfully logged in.",
+                        variant: "success",
+                    })
+                }
             } else {
-                router.push('/'); // Assuming there's a user dashboard
+                setProgress(100)
+                toast({
+                    title: "Login Failed",
+                    description: "An error occurred during login.",
+                    variant: "destructive",
+                })
             }
+            // Mock authentication logic
+
         } catch (error: any) {
             console.error("Login failed:", error);
             toast({
