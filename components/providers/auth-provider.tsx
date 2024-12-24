@@ -71,7 +71,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!auth) return;
 
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            console.log("Auth state changed", user);
             setCurrentUser(user);
             setIsLogged(!!user);
             setLoading(false);
@@ -115,9 +114,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const checkTokenExpiration = setInterval(() => {
-            console.log("Checking for token expiration");
-            console.log("Is logged:", isLogged);
-            console.log("Current user:", currentUser);
             if (isTokenExpired() && isLogged) {
                 logout();
                 toast({

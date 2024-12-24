@@ -100,4 +100,17 @@ body {
   animation: wave 2.5s ease-in-out infinite;
 }
 
+/* Add this to your global CSS file */
+@media (max-width: 767px) {
+  .rbc-calendar {
+    font-size: 12px;
+  }
+  .rbc-event {
+    padding: 2px !important;
+  }
+  .rbc-time-content {
+    overflow-x: hidden;
+  }
+}
+
 

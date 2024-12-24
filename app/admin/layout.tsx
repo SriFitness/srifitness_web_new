@@ -11,8 +11,7 @@ import { DynamicBreadcrumb } from "@/features/admin/components/dynamic-breadcrum
 import { Suspense } from "react"
 import AdminLoading from "./loading"
 
-
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode

@@ -1,5 +1,3 @@
-//root/app/admin/indoor/page.tsx
-
 import React from 'react'
 import IndoorScheduleManager from '@/features/admin/indoor/components/IndoorScheduleManager'
 
@@ -13,5 +11,4 @@ const IndoorAdminPage = () => {
 }
 
 export default IndoorAdminPage
-
 

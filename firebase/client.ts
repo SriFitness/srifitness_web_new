@@ -5,6 +5,7 @@ import { Auth, getAuth } from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator, Functions } from "firebase/functions";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { Firestore, getFirestore } from "firebase/firestore";
+import { getDatabase, Database } from "firebase/database";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDOATdDVy2tMkbiha76_zK_EkniEjTh9Lw",
@@ -21,6 +22,7 @@ let auth: Auth | undefined = undefined;
 let functions: Functions | undefined = undefined;
 let storage: FirebaseStorage | undefined = undefined;
 let firestore: Firestore | undefined = undefined;
+let realtimeDB: Database | undefined = undefined;
 
 const currentApps = getApps();
 if ( currentApps.length <= 0){
@@ -29,6 +31,7 @@ if ( currentApps.length <= 0){
     functions = getFunctions(app);
     storage = getStorage(app);
     firestore = getFirestore(app);
+    realtimeDB = getDatabase(app);
 
     if (process.env.NODE_ENV === "development") {
         connectFunctionsEmulator(functions, "localhost", 5001);
@@ -37,6 +40,7 @@ if ( currentApps.length <= 0){
     auth = getAuth(currentApps[0])
     storage = getStorage(currentApps[0]);
     firestore = getFirestore(currentApps[0]);
+    realtimeDB = getDatabase(currentApps[0]);
 }
 
-export { auth, functions, storage, firestore };
+export { auth, functions, storage, firestore, realtimeDB };

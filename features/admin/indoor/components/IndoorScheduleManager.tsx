@@ -1,97 +1,153 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { ref, onValue, set } from 'firebase/database'
-import { firestore as db } from '@/firebase/client'
+import { useState, useEffect } from 'react'
+import { ScheduleCalendar } from './ScheduleCalendar'
+import { ScheduleForm } from './ScheduleForm'
+import { ScheduleList } from './ScheduleList'
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
 
-interface TimeSlot {
+interface Booking {
+  id: string
+  title: string
+  start: string
+  end: string
+  userId: string
+  userName: string
+}
+
+interface UnavailablePeriod {
   id: string
   start: string
   end: string
-  status: 'available' | 'booked' | 'maintenance'
+  reason: string
 }
 
-const IndoorScheduleManager: React.FC = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date())
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
+export default function IndoorScheduleManager() {
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [unavailablePeriods, setUnavailablePeriods] = useState<UnavailablePeriod[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<Booking | UnavailablePeriod | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
-    // if (date) {
-    //   const formattedDate = date.toISOString().split('T')[0]
-    //   const timeSlotsRef = ref(db, `indoorSchedule/${formattedDate}`)
-      
-    //   onValue(timeSlotsRef, (snapshot) => {
-    //     const data = snapshot.val()
-    //     if (data) {
-    //       const slots = Object.entries(data).map(([id, slot]) => ({
-    //         id,
-    //         ...(slot as Omit<TimeSlot, 'id'>)
-    //       }))
-    //       setTimeSlots(slots)
-    //     } else {
-    //       setTimeSlots([])
-    //     }
-    //   })
-    // }
-  }, [date])
+    fetchBookingsAndUnavailablePeriods()
+  }, [])
 
-  const updateTimeSlot = (slotId: string, status: TimeSlot['status']) => {
-    // if (date) {
-    //   const formattedDate = date.toISOString().split('T')[0]
-    //   const slotRef = ref(db, `indoorSchedule/${formattedDate}/${slotId}`)
-    //   set(slotRef, { ...timeSlots.find(slot => slot.id === slotId), status })
-    // }
+  const fetchBookingsAndUnavailablePeriods = async () => {
+    try {
+      const response = await fetch('/api/admin/indoor-schedules')
+      const data = await response.json()
+      setBookings(data.bookings)
+      setUnavailablePeriods(data.unavailablePeriods)
+      setIsLoading(false)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      toast({
+        title: 'Error fetching schedules',
+        description: 'Please try again later.',
+        variant: 'destructive',
+      })
+      setIsLoading(false)
+    }
+  }
+
+  const handleAddUnavailablePeriod = async (newPeriod: Omit<UnavailablePeriod, 'id'>) => {
+    try {
+      const response = await fetch('/api/admin/indoor-schedules/unavailable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPeriod),
+      })
+      if (response.ok) {
+        toast({ title: 'Unavailable period added successfully' })
+        fetchBookingsAndUnavailablePeriods()
+      } else {
+        throw new Error('Failed to add unavailable period')
+      }
+    } catch (error) {
+      toast({
+        title: 'Error adding unavailable period',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive',
+      })
+    }
+    setIsFormOpen(false)
+  }
+
+  const handleUpdateUnavailablePeriod = async (updatedPeriod: UnavailablePeriod) => {
+    try {
+      const response = await fetch(`/api/admin/indoor-schedules/unavailable/${updatedPeriod.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPeriod),
+      })
+      if (response.ok) {
+        toast({ title: 'Unavailable period updated successfully' })
+        fetchBookingsAndUnavailablePeriods()
+      } else {
+        throw new Error('Failed to update unavailable period')
+      }
+    } catch (error) {
+      toast({
+        title: 'Error updating unavailable period',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive',
+      })
+    }
+    setIsFormOpen(false)
+    setEditingItem(null)
+  }
+
+  const handleDeleteUnavailablePeriod = async (id: string) => {
+    try {
+      const response = await fetch(`/api/admin/indoor-schedules/unavailable/${id}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        toast({ title: 'Unavailable period deleted successfully' })
+        fetchBookingsAndUnavailablePeriods()
+      } else {
+        throw new Error('Failed to delete unavailable period')
+      }
+    } catch (error) {
+      toast({
+        title: 'Error deleting unavailable period',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleEditItem = (item: Booking | UnavailablePeriod) => {
+    setEditingItem(item)
+    setIsFormOpen(true)
   }
 
   return (
-    <div className="flex space-x-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Select Date</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            className="rounded-md border"
-          />
-        </CardContent>
-      </Card>
-      <Card className="flex-1">
-        <CardHeader>
-          <CardTitle>Time Slots</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {timeSlots.map((slot) => (
-            <div key={slot.id} className="flex items-center space-x-2 mb-2">
-              <Label>{`${slot.start} - ${slot.end}`}</Label>
-              <Select
-                value={slot.status}
-                onValueChange={(value) => updateTimeSlot(slot.id, value as TimeSlot['status'])}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="booked">Booked</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-          {timeSlots.length === 0 && <p>No time slots available for this date.</p>}
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <Button onClick={() => setIsFormOpen(true)}>Add Unavailable Period</Button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ScheduleCalendar bookings={bookings} unavailablePeriods={unavailablePeriods} />
+        <ScheduleList
+          bookings={bookings}
+          unavailablePeriods={unavailablePeriods}
+          onEdit={handleEditItem}
+          onDeleteUnavailable={handleDeleteUnavailablePeriod}
+        />
+      </div>
+      {isFormOpen && (
+        <ScheduleForm
+          onSubmit={editingItem ? handleUpdateUnavailablePeriod : handleAddUnavailablePeriod}
+          onCancel={() => {
+            setIsFormOpen(false)
+            setEditingItem(null)
+          }}
+          initialData={editingItem as UnavailablePeriod}
+        />
+      )}
     </div>
   )
 }
-
-export default IndoorScheduleManager
 
