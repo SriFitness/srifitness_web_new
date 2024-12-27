@@ -137,8 +137,12 @@ const data = {
       icon: Radio,
       items: [
         {
-          title: "General",
+          title: "Dashboard",
           url: "/admin/indoor",
+        },
+        {
+          title: "Details",
+          url: "/admin/indoor/details",
         },
       ],
     },

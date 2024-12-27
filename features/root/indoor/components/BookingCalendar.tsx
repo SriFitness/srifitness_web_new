@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const localizer = momentLocalizer(moment)
 
 interface Event {
-    id: number | string; // Allow both types
+    id: number | string;
     title: string;
     start: Date;
     end: Date;
@@ -81,7 +81,11 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
                     <div className="h-[500px] md:h-[600px]">
                         <Calendar
                             localizer={localizer}
-                            events={events}
+                            events={events.map(event => ({
+                                ...event,
+                                start: new Date(event.start),
+                                end: new Date(event.end)
+                            }))}
                             startAccessor="start"
                             endAccessor="end"
                             style={{ height: '100%' }}
@@ -94,7 +98,7 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
                             max={maxTime}
                             step={10}
                             timeslots={6}
-                            toolbar={!isMobile}
+                            toolbar={true}
                             formats={{
                                 timeGutterFormat: (date, culture, localizer) =>
                                     localizer.format(date, 'HH:mm', culture),

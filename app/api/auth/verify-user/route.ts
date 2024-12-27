@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server"
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
-    const requestedUserId = request.headers.get('X-Requested-User-Id')
+    const requestedUserId = request.headers.get('RequestedUserId')
 
     if (!authHeader?.startsWith('Bearer ') || !requestedUserId) {
       return new NextResponse('Unauthorized', { status: 401 })

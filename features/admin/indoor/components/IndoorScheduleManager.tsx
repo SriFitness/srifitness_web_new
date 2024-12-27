@@ -1,3 +1,4 @@
+//features/admin/indoor/components/IndoorScheduleManager.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -6,6 +7,7 @@ import { ScheduleForm } from './ScheduleForm'
 import { ScheduleList } from './ScheduleList'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
+import Cookies from 'js-cookie'
 
 interface Booking {
   id: string
@@ -37,25 +39,64 @@ export default function IndoorScheduleManager() {
 
   const fetchBookingsAndUnavailablePeriods = async () => {
     try {
-      const response = await fetch('/api/admin/indoor-schedules')
-      const data = await response.json()
-      setBookings(data.bookings)
-      setUnavailablePeriods(data.unavailablePeriods)
-      setIsLoading(false)
+      const token = Cookies.get('firebaseIdToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+  
+      const response = await fetch('/api/indoor/schedules/get/admin', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+  
+        // Transform the bookings
+        const transformedBookings = data.bookings.map((booking: any) => ({
+          id: booking.id,
+          title: `Schedule ${booking.scheduleNumber}`, // Add a meaningful title
+          start: new Date(booking.startTime),
+          end: new Date(booking.endTime),
+          userId: booking.userId,
+          userName: booking.userName,
+          type: 'booking',
+        }));
+  
+        // Transform unavailable periods
+        const transformedUnavailablePeriods = data.unavailablePeriods.map(
+          (period: any) => ({
+            id: period.id,
+            title: 'Unavailable',
+            start: new Date(period.startTime),
+            end: new Date(period.endTime),
+            reason: period.reason,
+            type: 'unavailable',
+          })
+        );
+  
+        setBookings(transformedBookings);
+        setUnavailablePeriods(transformedUnavailablePeriods);
+      } else {
+        throw new Error('Failed to fetch schedules');
+      }
+  
+      setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error)
+      console.error('Error fetching data:', error);
       toast({
         title: 'Error fetching schedules',
         description: 'Please try again later.',
         variant: 'destructive',
-      })
-      setIsLoading(false)
+      });
+      setIsLoading(false);
     }
-  }
-
+  };
+  
   const handleAddUnavailablePeriod = async (newPeriod: Omit<UnavailablePeriod, 'id'>) => {
     try {
-      const response = await fetch('/api/admin/indoor-schedules/unavailable', {
+      const response = await fetch('/api/indoor/unavailable', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPeriod),
@@ -78,7 +119,7 @@ export default function IndoorScheduleManager() {
 
   const handleUpdateUnavailablePeriod = async (updatedPeriod: UnavailablePeriod) => {
     try {
-      const response = await fetch(`/api/admin/indoor-schedules/unavailable/${updatedPeriod.id}`, {
+      const response = await fetch(`/api/indoor/unavailable/${updatedPeriod.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedPeriod),
@@ -102,7 +143,7 @@ export default function IndoorScheduleManager() {
 
   const handleDeleteUnavailablePeriod = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/indoor-schedules/unavailable/${id}`, {
+      const response = await fetch(`/api/indoor/unavailable/${id}`, {
         method: 'DELETE',
       })
       if (response.ok) {
@@ -127,15 +168,15 @@ export default function IndoorScheduleManager() {
 
   return (
     <div className="space-y-6">
-      <Button onClick={() => setIsFormOpen(true)}>Add Unavailable Period</Button>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* <Button onClick={() => setIsFormOpen(true)}>Add Unavailable Period</Button> */}
+      <div>
         <ScheduleCalendar bookings={bookings} unavailablePeriods={unavailablePeriods} />
-        <ScheduleList
+        {/* <ScheduleList
           bookings={bookings}
           unavailablePeriods={unavailablePeriods}
           onEdit={handleEditItem}
           onDeleteUnavailable={handleDeleteUnavailablePeriod}
-        />
+        /> */}
       </div>
       {isFormOpen && (
         <ScheduleForm

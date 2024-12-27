@@ -10,16 +10,19 @@ import { SupportChat } from './SupportChat'
 import { Button } from '@/components/ui/button'
 import { useToast } from "@/hooks/use-toast"
 import moment from 'moment'
-import { getSchedules } from '../server/db/get-schedules'
-import Cookies from "js-cookie"; 
+import { useAuth } from '@/components/providers/auth-provider'
+import { User } from 'firebase/auth'
+import { getSchedules, createSchedule, deleteSchedule, updateSchedule } from '@/features/root/indoor/server/actions/Indoor'
+import { useSocket } from '@/hooks/useSocket'
+import { useBookingService } from '@/hooks/useBookingService'
 
 interface Booking {
   id: string
-  title: string
+  scheduleNumber?: string
   startTime: Date
   endTime: Date
-  userId: string
-  userName: string
+  userId?: string
+  userName?: string
 }
 
 interface UnavailablePeriod {
@@ -29,16 +32,51 @@ interface UnavailablePeriod {
   reason: string
 }
 
+type AuthContextType = {
+  currentUser: User | null;
+}
+
 export default function IndoorBookingPage() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+  const [isReschedulingModalOpen, setIsReschedulingModalOpen] = useState(false)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [unavailablePeriods, setUnavailablePeriods] = useState<UnavailablePeriod[]>([])
   const [userBookings, setUserBookings] = useState<Booking[]>([])
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const { toast } = useToast()
+  const { currentUser } = useAuth() as AuthContextType
+  const socket = useSocket()
+  const bookingService = useBookingService()
 
   useEffect(() => {
     fetchBookingsAndUnavailablePeriods()
-  }, [])
+
+    if (!socket) return
+
+    const handleBookingCreated = (booking: Booking) => {
+      setBookings(prev => [...prev, booking])
+    }
+
+    const handleBookingUpdated = ({ bookingId, updatedBooking }: { bookingId: string, updatedBooking: Booking }) => {
+      setBookings(prev => prev.map(booking => 
+        booking.id === bookingId ? updatedBooking : booking
+      ))
+    }
+
+    const handleBookingDeleted = (bookingId: string) => {
+      setBookings(prev => prev.filter(booking => booking.id !== bookingId))
+    }
+
+    socket.on('booking:created', handleBookingCreated)
+    socket.on('booking:updated', handleBookingUpdated)
+    socket.on('booking:deleted', handleBookingDeleted)
+
+    return () => {
+      socket.off('booking:created', handleBookingCreated)
+      socket.off('booking:updated', handleBookingUpdated)
+      socket.off('booking:deleted', handleBookingDeleted)
+    }
+  }, [socket, currentUser])
 
   const fetchBookingsAndUnavailablePeriods = async () => {
     try {
@@ -61,13 +99,17 @@ export default function IndoorBookingPage() {
         endTime: new Date(period.endTime)
       })))
 
-      // Fetch user bookings (assuming we have a logged-in user)
-      // This would typically be filtered on the server side
-      setUserBookings(fetchedBookings.filter(booking => booking.userId === 'current-user-id').map(booking => ({
-        ...booking,
-        startTime: new Date(booking.startTime),
-        endTime: new Date(booking.endTime)
-      })))
+      if (currentUser) {
+        const userBookings = fetchedBookings
+          .filter(booking => booking.id?.replace(/_[^_]*$/, '') === currentUser.uid)
+          .map(booking => ({
+            ...booking,
+            id: `${currentUser.uid}_${booking.scheduleNumber}`,
+            startTime: new Date(booking.startTime),
+            endTime: new Date(booking.endTime)
+          }))
+        setUserBookings(userBookings)
+      }
     } catch (error) {
       console.error('Error fetching schedules:', error)
       toast({
@@ -79,53 +121,93 @@ export default function IndoorBookingPage() {
   }
 
   const handleBookingSubmit = async (date: Date, startTime: string, endTime: string) => {
+    if (!currentUser || !bookingService) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to book",
+        variant: "destructive",
+      })
+      return
+    }
+
     const newBooking = {
-      title: 'New Booking',
-      startTime: moment(date).set({
+      startTime: new Date(moment(date).set({
         hour: parseInt(startTime.split(':')[0]),
         minute: parseInt(startTime.split(':')[1]),
         second: 0,
         millisecond: 0
-      }).toDate(),
-      endTime: moment(date).set({
+      }).toDate()),
+      endTime: new Date(moment(date).set({
         hour: parseInt(endTime.split(':')[0]),
         minute: parseInt(endTime.split(':')[1]),
         second: 0,
         millisecond: 0
-      }).toDate()
+      }).toDate()),
+      user: currentUser
     }
 
     try {
-      const response = await fetch('/api/indoor/schedules/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${Cookies.get("firebaseIdToken")}`, 
-        },
-        body: JSON.stringify(newBooking),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setBookings([...bookings, { ...newBooking, id: data.id }])
-        setUserBookings([...userBookings, { ...newBooking, id: data.id }])
-        toast({
-          title: "Booking successful",
-          description: "Your indoor facility has been booked.",
-        })
-      } else {
-        throw new Error('Failed to book')
-      }
-    } catch (error) {
-      console.error('Error booking:', error)
+      const createdBooking = await createSchedule(newBooking)
+      await bookingService.createBooking(createdBooking)
       toast({
-        title: "Booking failed",
-        description: "Please try again later.",
+        title: "Success",
+        description: "Booking created successfully",
+      })
+    } catch (error) {
+      console.error("Error creating booking:", error)
+      toast({
+        title: "Error",
+        description: "Failed to create booking",
         variant: "destructive",
       })
     }
 
     setIsBookingModalOpen(false)
+  }
+
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!currentUser || !bookingService) return
+
+    try {
+      const [userId, scheduleId] = bookingId.split('_')
+      await deleteSchedule(userId, scheduleId)
+      await bookingService.deleteBooking(bookingId)
+      toast({
+        title: "Success",
+        description: "Booking cancelled successfully",
+      })
+    } catch (error) {
+      console.error("Error cancelling booking:", error)
+      toast({
+        title: "Error",
+        description: "Failed to cancel booking",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleRescheduleBooking = async (bookingId: string, newStartTime: Date, newEndTime: Date) => {
+    if (!currentUser || !bookingService) return
+
+    try {
+      const [userId, scheduleId] = bookingId.split('_')
+      const updatedBooking = await updateSchedule(userId, scheduleId, { startTime: newStartTime, endTime: newEndTime })
+      await bookingService.updateBooking(bookingId, updatedBooking)
+      toast({
+        title: "Success",
+        description: "Booking rescheduled successfully",
+      })
+    } catch (error) {
+      console.error("Error rescheduling booking:", error)
+      toast({
+        title: "Error",
+        description: "Failed to reschedule booking",
+        variant: "destructive",
+      })
+    }
+
+    setIsReschedulingModalOpen(false)
+    setSelectedBooking(null)
   }
 
   const filteredBookings = useMemo(() =>
@@ -148,12 +230,13 @@ export default function IndoorBookingPage() {
         <BookingCalendar
           events={[
             ...filteredBookings.map((booking) => ({
-              id: parseInt(booking.id, 10), // Convert string ID to number
+              id: booking.id,
               start: booking.startTime,
               end: booking.endTime,
+              title: "Booked"
             })),
             ...unavailablePeriods.map((period) => ({
-              id: parseInt(period.id, 10), // Convert string ID to number
+              id: period.id,
               title: period.reason,
               start: period.startTime,
               end: period.endTime,
@@ -170,17 +253,26 @@ export default function IndoorBookingPage() {
             <Button
               onClick={() => setIsBookingModalOpen(true)}
               className="w-full"
+              disabled={!currentUser}
             >
               Book Now
             </Button>
           </motion.div>
           <UpcomingBookings
             bookings={userBookings.map((booking) => ({
-              id: parseInt(booking.id, 10),
+              id: booking.id,
               date: moment(booking.startTime).format('YYYY-MM-DD'),
               startTime: moment(booking.startTime).format('HH:mm'),
               endTime: moment(booking.endTime).format('HH:mm'),
             }))}
+            onCancel={handleCancelBooking}
+            onReschedule={(bookingId) => {
+              const booking = userBookings.find(b => b.id === bookingId)
+              if (booking) {
+                setSelectedBooking(booking)
+                setIsReschedulingModalOpen(true)
+              }
+            }}
           />
         </div>
       </div>
@@ -192,6 +284,36 @@ export default function IndoorBookingPage() {
         bookedSlots={filteredBookings}
         unavailablePeriods={unavailablePeriods}
       />
+
+      {selectedBooking && (
+        <BookingModal
+          isOpen={isReschedulingModalOpen}
+          onClose={() => {
+            setIsReschedulingModalOpen(false)
+            setSelectedBooking(null)
+          }}
+          onSubmit={(date, startTime, endTime) => {
+            const newStartTime = new Date(moment(date).set({
+              hour: parseInt(startTime.split(':')[0]),
+              minute: parseInt(startTime.split(':')[1]),
+              second: 0,
+              millisecond: 0
+            }).toDate())
+            const newEndTime = new Date(moment(date).set({
+              hour: parseInt(endTime.split(':')[0]),
+              minute: parseInt(endTime.split(':')[1]),
+              second: 0,
+              millisecond: 0
+            }).toDate())
+            handleRescheduleBooking(selectedBooking.id, newStartTime, newEndTime)
+          }}
+          bookedSlots={filteredBookings.filter(booking => booking.id !== selectedBooking.id)}
+          unavailablePeriods={unavailablePeriods}
+          initialDate={selectedBooking.startTime}
+          initialStartTime={moment(selectedBooking.startTime).format('HH:mm')}
+          initialEndTime={moment(selectedBooking.endTime).format('HH:mm')}
+        />
+      )}
 
       <SupportChat />
     </div>

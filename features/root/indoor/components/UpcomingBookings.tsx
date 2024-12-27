@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 
 interface Booking {
-  id: number;
+  id: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -11,9 +11,11 @@ interface Booking {
 
 interface UpcomingBookingsProps {
   bookings: Booking[];
+  onCancel: (bookingId: string) => void;
+  onReschedule: (bookingId: string) => void;
 }
 
-export function UpcomingBookings({ bookings }: UpcomingBookingsProps) {
+export function UpcomingBookings({ bookings, onCancel, onReschedule }: UpcomingBookingsProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -33,8 +35,12 @@ export function UpcomingBookings({ bookings }: UpcomingBookingsProps) {
                     <p className="font-semibold">{booking.date}</p>
                     <p>{booking.startTime} - {booking.endTime}</p>
                     <div className="mt-2 flex space-x-2">
-                      <Button variant="outline" size="sm">Reschedule</Button>
-                      <Button variant="outline" size="sm">Cancel</Button>
+                      <Button variant="outline" size="sm" onClick={() => onReschedule(booking.id)}>
+                        Reschedule
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => onCancel(booking.id)}>
+                        Cancel
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

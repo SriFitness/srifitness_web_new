@@ -39,7 +39,7 @@ export async function GET(
         // Get user data and check the role
         const userData = userDoc.data();
         if (!userData || !userData.role) {
-            return NextResponse.json({ role: 'user' }, { status: 200 }); // Default role is "user"
+            return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
 
         // Only admin or user can delete user info

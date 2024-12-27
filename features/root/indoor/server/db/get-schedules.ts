@@ -1,13 +1,14 @@
-import { realtimeDB } from "@/firebase/client";
-import { ref, get } from "firebase/database";
+//features/root/indoor/server/db/get-schedules.ts
+
+import Cookies from 'js-cookie';
 
 interface Booking {
   id: string;
-  title: string;
+  scheduleNumber?: string;
   startTime: string;
   endTime: string;
-  userId: string;
-  userName: string;
+  userId?: string;
+  userName?: string;
 }
 
 interface UnavailablePeriod {
@@ -23,36 +24,24 @@ interface SchedulesData {
 }
 
 export const getSchedules = async (): Promise<SchedulesData | Error> => {
-  if (!realtimeDB) {
-    return new Error("Database hasn't been initialized. Try again.");
-  }
-
   try {
-    const bookingsRef = ref(realtimeDB, 'bookings');
-    const unavailablePeriodsRef = ref(realtimeDB, 'unavailablePeriods');
+    const token = Cookies.get('firebaseIdToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
 
-    const [bookingsSnapshot, unavailablePeriodsSnapshot] = await Promise.all([
-      get(bookingsRef),
-      get(unavailablePeriodsRef)
-    ]);
-
-    const bookings: Booking[] = [];
-    bookingsSnapshot.forEach((childSnapshot) => {
-      bookings.push({
-        id: childSnapshot.key as string,
-        ...childSnapshot.val()
-      });
+    const response = await fetch('/api/indoor/schedules/get/user', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
-    const unavailablePeriods: UnavailablePeriod[] = [];
-    unavailablePeriodsSnapshot.forEach((childSnapshot) => {
-      unavailablePeriods.push({
-        id: childSnapshot.key as string,
-        ...childSnapshot.val()
-      });
-    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch schedules');
+    }
 
-    return { bookings, unavailablePeriods };
+    const data: SchedulesData = await response.json();
+    return data;
   } catch (error) {
     console.error("Error fetching schedules:", error);
     return new Error("Failed to fetch schedules. Please try again later.");
