@@ -1,8 +1,12 @@
-//root/middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Allow Socket.IO connections without authentication
+  if (request.nextUrl.pathname.startsWith('/api/socket')) {
+    return NextResponse.next()
+  }
+
   const authToken = request.cookies.get("firebaseIdToken")?.value
   const tokenExpiration = request.cookies.get("tokenExpiration")?.value
 
@@ -49,7 +53,7 @@ export async function middleware(request: NextRequest) {
 
       // Check for restricted subadmin routes
       if (role === 'subadmin') {
-        const restrictedRoutes = ['/admin/users', '/admin/workout', '/admin/marketplace'] // Add more restricted routes as needed
+        const restrictedRoutes = ['/admin/users', '/admin/workout', '/admin/marketplace']
         if (restrictedRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
           return NextResponse.redirect(new URL('/admin/unauthorized', request.url))
         }
@@ -65,7 +69,7 @@ export async function middleware(request: NextRequest) {
   // For user profile routes
   if (request.nextUrl.pathname.startsWith('/user/')) {
     try {
-      const userId = request.nextUrl.pathname.split('/')[2] // Assuming the URL is like /user/:userId
+      const userId = request.nextUrl.pathname.split('/')[2]
       const verifyResponse = await fetch(`${request.nextUrl.origin}/api/auth/verify-user`, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -90,6 +94,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    '/api/socket',
     '/admin/:path*',
     '/user/:path*',
     '/unauthorized'
