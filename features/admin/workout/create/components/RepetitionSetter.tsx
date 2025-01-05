@@ -1,3 +1,4 @@
+//features/admin/workout/create/components/RepetitionSetter.tsx
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 

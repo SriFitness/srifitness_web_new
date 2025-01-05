@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/sidebar"
 import { DynamicBreadcrumb } from "@/features/admin/components/dynamic-breadcrumb"
 import { Suspense } from "react"
-import AdminLoading from "./loading"
 
-export default function DashboardLayout({
+
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
@@ -29,7 +29,7 @@ export default function DashboardLayout({
         </header>
         <div className="flex flex-col flex-1 w-full">
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
-            <Suspense fallback={<AdminLoading />}>
+            <Suspense fallback={null}>
               {children}
             </Suspense>
           </main>

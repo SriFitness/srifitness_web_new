@@ -7,8 +7,8 @@ type FormDataType = {
     quantity: number;
     discount: number;
     pitch: string;
-    images?: File[];
-    thumbnail?: File;
+    images: File[];
+    thumbnail: File;
     category: string;
     brand?: string;
     dimensions?: string;
@@ -16,6 +16,7 @@ type FormDataType = {
     manufacturer?: string;
     productId: string;
 };
+
 
 export const addNewProduct = (formData: FormDataType) => {
     return addNewProductFn(formData);

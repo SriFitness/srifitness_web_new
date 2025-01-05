@@ -1,6 +1,7 @@
+//components/styles/loading-bar.tsx
 "use client"
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useLoading } from '@/components/providers/LoadingContext'
@@ -18,7 +19,7 @@ export function LoadingBar() {
   }, [pathname, searchParams])
 
   return (
-    <>
+    <Suspense>
       {isLoading && (
         <motion.div
           className="fixed top-0 left-0 right-0 h-1 bg-[#E96A25] z-50"
@@ -27,7 +28,7 @@ export function LoadingBar() {
           transition={{ duration: 0.3, ease: "easeInOut" }}
         />
       )}
-    </>
+    </Suspense>
   )
 }
 

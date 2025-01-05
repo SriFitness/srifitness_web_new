@@ -27,7 +27,9 @@ export async function GET(request: NextRequest) {
     const oneWeekLater = moment().add(7, 'days');
 
     // Process schedules
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allBookings = Object.entries(schedules).flatMap(([scheduleOwnerId, userSchedules]: [string, any]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return Object.entries(userSchedules).map(([scheduleNumber, booking]: [string, any]) => {
         const isCurrentUser = scheduleOwnerId === userId;
         const bookingDate = moment(booking.startTime);
@@ -55,10 +57,12 @@ export async function GET(request: NextRequest) {
 
     // Process unavailable periods
     const filteredUnavailablePeriods = Object.entries(unavailablePeriods)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter(([, period]: [string, any]) => {
         const periodDate = moment(period.startTime);
         return periodDate.isSameOrAfter(currentDate) && periodDate.isBefore(oneWeekLater);
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map(([id, period]: [string, any]) => ({
         id,
         startTime: period.startTime,

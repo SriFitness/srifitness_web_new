@@ -14,7 +14,11 @@ interface BookingModalProps {
     onSubmit: (date: Date, startTime: string, endTime: string) => void;
     bookedSlots: { startTime: Date; endTime: Date }[];
     unavailablePeriods: { startTime: Date; endTime: Date }[];
+    initialDate?: Date; // Add this line
+    initialStartTime?: string; // Add this line
+    initialEndTime?: string; // Add this line
 }
+
 
 export function BookingModal({ isOpen, onClose, onSubmit, bookedSlots, unavailablePeriods }: BookingModalProps) {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);

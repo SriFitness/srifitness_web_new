@@ -1,8 +1,8 @@
 import LoginForm from "@/features/auth/components/LoginForm";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader} from "@/components/ui/card";
 import Image from "next/image"; // Import next/image for optimized images
 
-export default function LoginPage() {
+export default async function LoginPage() {
     return (
         <div className="flex items-center justify-center min-h-screen bg-background">
 
