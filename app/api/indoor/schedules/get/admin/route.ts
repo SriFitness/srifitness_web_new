@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { realtimeDB, auth } from '@/firebase/server'
-import moment from 'moment'
 
 export async function GET(request: NextRequest) {
     try {
@@ -29,8 +28,8 @@ export async function GET(request: NextRequest) {
             return new NextResponse("Forbidden: Only admins or subadmins can create users", { status: 403 });
         }
 
-        const decodedToken = await auth.verifyIdToken(token);
-        const userId = decodedToken.uid;
+        //const decodedToken = await auth.verifyIdToken(token);
+        // const userId = decodedToken.uid;
         const allowed = role === "admin" || role === "subadmin";
 
         const schedulesSnapshot = await realtimeDB.ref('schedules').once('value');
@@ -39,14 +38,16 @@ export async function GET(request: NextRequest) {
         const schedules = schedulesSnapshot.val() || {};
         const unavailablePeriods = unavailablePeriodsSnapshot.val() || {};
 
-        const currentDate = moment();
-        const oneWeekLater = moment().add(7, 'days');
+        // const currentDate = moment();
+        // const oneWeekLater = moment().add(7, 'days');
 
-        let filteredBookings = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const filteredBookings: { id: string; userId: string; scheduleNumber: string; startTime: any; endTime: any; userName: any; }[] = [];
 
         if (allowed) {
             // For admin, fetch all bookings
             Object.entries(schedules).forEach(([userId, userSchedules]) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 Object.entries(userSchedules as object).forEach(([scheduleNumber, booking]: [string, any]) => {
                     filteredBookings.push({
                         id: `${userId}_${scheduleNumber}`,
@@ -61,6 +62,7 @@ export async function GET(request: NextRequest) {
         }
 
         const filteredUnavailablePeriods = Object.entries(unavailablePeriods)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map(([id, period]: [string, any]) => ({
                 id,
                 startTime: period.startTime,

@@ -58,7 +58,7 @@
 
 
 import { Server as SocketIOServer } from "socket.io";
-import { NextRequest } from "next/server";
+// import { NextRequest } from "next/server";
 import { Server as HTTPServer } from "http";
 
 // Create a type to extend the Node.js Server type
@@ -66,11 +66,13 @@ interface ServerWithSocket extends HTTPServer {
   io?: SocketIOServer;
 }
 
-export async function GET(req: NextRequest) {
+// export async function GET(req: NextRequest) {
+export async function GET() {
   const res = new Response("Socket.io handler initialized", {
     status: 200,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const server = (res as any).socket?.server as ServerWithSocket;
 
   if (server.io) {

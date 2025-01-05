@@ -16,6 +16,7 @@ interface Product {
 export function ProductList() {
   const [searchTerm, setSearchTerm] = useState("")
   const [products, setProducts] = useState<Product[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {

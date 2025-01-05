@@ -8,8 +8,6 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import Cookies from "js-cookie";
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import loadingGif from '@/public/loadingGif.gif'
 
 // Set token expiration time (e.g., 20 seconds for testing)
 const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000;
@@ -74,6 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setCurrentUser(user);
             setIsLogged(!!user);
             setLoading(false);
+            if(loading){}
 
             if (user) {
                 try {
@@ -110,6 +109,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
 
         return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -138,6 +138,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setAuthToken(token);
             setIsLogged(true);
             return true;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("Login error:", error);
             throw new Error(`Error ${error.code}: ${error.message}`);

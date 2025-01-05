@@ -1,21 +1,52 @@
 //root/app/admin/dashboard/loading.tsx
 
-import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { WaveSkeleton } from "@/components/ui/wave-skeleton"
 
 export default function Loading() {
   return (
     <div className="space-y-4">
-      <Skeleton className="h-8 w-[200px]" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <Skeleton key={i} className="h-[100px]" />
-        ))}
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Skeleton className="h-[300px] col-span-4" />
-        <Skeleton className="h-[300px] col-span-3" />
-      </div>
-      <Skeleton className="h-[400px]" />
+      <Input
+        placeholder="Search products..."
+        className="max-w-sm"
+      />
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Image</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Quantity</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[...Array(5)].map((_, idx) => (
+            <TableRow key={idx}>
+              <TableCell>
+                <WaveSkeleton className="w-12 h-12 rounded-md" />
+              </TableCell>
+              <TableCell>
+                <WaveSkeleton className="w-32 h-6" />
+              </TableCell>
+              <TableCell>
+                <WaveSkeleton className="w-24 h-6" />
+              </TableCell>
+              <TableCell>
+                <WaveSkeleton className="w-12 h-6" />
+              </TableCell>
+              <TableCell>
+                <WaveSkeleton className="w-16 h-6" />
+              </TableCell>
+              <TableCell>
+                <WaveSkeleton className="w-32 h-8" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }

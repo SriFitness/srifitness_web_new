@@ -1,3 +1,4 @@
+//app/admin/workout/create/page.tsx
 import WorkoutCreationForm from '@/features/admin/workout/create/components/WorkoutCreationForm'
 
 export default function CreateWorkoutPage() {

@@ -9,7 +9,7 @@ interface LoadingContextType {
   setProgress: (progress: number) => void
 }
 
-const LoadingContext = createContext<LoadingContextType | undefined>(undefined)
+export const LoadingContext = createContext<LoadingContextType | undefined>(undefined)
 
 export function LoadingProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)

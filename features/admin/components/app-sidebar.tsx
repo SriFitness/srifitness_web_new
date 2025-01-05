@@ -125,7 +125,7 @@ const data = {
         {
           title: "Dashboard",
           url: "/admin/marketplace",
-        },{
+        }, {
           title: "Products",
           url: "/admin/marketplace/products"
         }
@@ -169,8 +169,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   if (auth) {
     if (auth.currentUser) {
-      if(auth.currentUser.email){
-        user.email =  auth.currentUser.email;
+      if (auth.currentUser.email) {
+        user.email = auth.currentUser.email;
       }
     }
   }

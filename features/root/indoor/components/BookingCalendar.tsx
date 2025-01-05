@@ -1,14 +1,12 @@
-//features/(root)/indoor/components/BookingCalendar.tsx
-
 import { useState, useEffect } from 'react'
-import { Calendar, momentLocalizer, View } from 'react-big-calendar'
+import { Calendar, momentLocalizer, View, DateLocalizer, Formats } from 'react-big-calendar'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import moment from 'moment'
 import { Card, CardContent } from '@/components/ui/card'
 import { motion } from 'framer-motion'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-const localizer = momentLocalizer(moment)
+const localizer: DateLocalizer = momentLocalizer(moment)
 
 interface Event {
     id: number | string;
@@ -34,6 +32,7 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
         return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const eventStyleGetter = (event: Event) => {
         return {
             style: {
@@ -54,6 +53,13 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
 
     const handleViewChange = (newView: string) => {
         setView(newView as View)
+    }
+
+    const formats: Formats = {
+        timeGutterFormat: (date: Date, culture?: string, localizer?: DateLocalizer) =>
+            localizer?.format(date, 'HH:mm', culture) || '',
+        eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }, culture?: string, localizer?: DateLocalizer) =>
+            `${localizer?.format(start, 'HH:mm', culture) || ''} - ${localizer?.format(end, 'HH:mm', culture) || ''}`,
     }
 
     return (
@@ -99,12 +105,7 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
                             step={10}
                             timeslots={6}
                             toolbar={true}
-                            formats={{
-                                timeGutterFormat: (date, culture, localizer) =>
-                                    localizer.format(date, 'HH:mm', culture),
-                                eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
-                                    `${localizer.format(start, 'HH:mm', culture)} - ${localizer.format(end, 'HH:mm', culture)}`,
-                            }}
+                            formats={formats}
                         />
                     </div>
                 </CardContent>

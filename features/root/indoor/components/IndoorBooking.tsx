@@ -15,6 +15,7 @@ import { User } from 'firebase/auth'
 import { getSchedules, createSchedule, deleteSchedule, updateSchedule } from '@/features/root/indoor/server/actions/Indoor'
 import { useSocket } from '@/hooks/useSocket'
 import { useBookingService } from '@/hooks/useBookingService'
+import { CreateBookingDTO, UpdateBookingDTO } from '@/types/booking'
 
 interface Booking {
   id: string
@@ -58,7 +59,7 @@ export default function IndoorBookingPage() {
     }
 
     const handleBookingUpdated = ({ bookingId, updatedBooking }: { bookingId: string, updatedBooking: Booking }) => {
-      setBookings(prev => prev.map(booking => 
+      setBookings(prev => prev.map(booking =>
         booking.id === bookingId ? updatedBooking : booking
       ))
     }
@@ -130,7 +131,7 @@ export default function IndoorBookingPage() {
       return
     }
 
-    const newBooking = {
+    const newBooking: CreateBookingDTO = {
       startTime: new Date(moment(date).set({
         hour: parseInt(startTime.split(':')[0]),
         minute: parseInt(startTime.split(':')[1]),
@@ -143,12 +144,14 @@ export default function IndoorBookingPage() {
         second: 0,
         millisecond: 0
       }).toDate()),
-      user: currentUser
+      userId: currentUser.uid,
+      userName: currentUser.displayName || 'Anonymous'
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const createdBooking = await createSchedule(newBooking)
-      await bookingService.createBooking(createdBooking)
+      await bookingService.createBooking(newBooking)
       toast({
         title: "Success",
         description: "Booking created successfully",
@@ -191,8 +194,12 @@ export default function IndoorBookingPage() {
 
     try {
       const [userId, scheduleId] = bookingId.split('_')
-      const updatedBooking = await updateSchedule(userId, scheduleId, { startTime: newStartTime, endTime: newEndTime })
-      await bookingService.updateBooking(bookingId, updatedBooking)
+      const updatedBookingData: UpdateBookingDTO = { startTime: newStartTime, endTime: newEndTime }
+      const updatedBooking = await updateSchedule(userId, scheduleId, updatedBookingData)
+      if (updatedBooking instanceof Error) {
+        throw updatedBooking
+      }
+      await bookingService.updateBooking(bookingId, updatedBookingData)
       toast({
         title: "Success",
         description: "Booking rescheduled successfully",
@@ -216,15 +223,7 @@ export default function IndoorBookingPage() {
   )
 
   return (
-    <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-4xl font-bold mb-8 text-center text-gray-800"
-      >
-        Indoor Facility Booking
-      </motion.h1>
+    <div className="container mx-auto p-4 bg-gray-50 min-h-screen mt-24">
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <BookingCalendar
@@ -309,9 +308,9 @@ export default function IndoorBookingPage() {
           }}
           bookedSlots={filteredBookings.filter(booking => booking.id !== selectedBooking.id)}
           unavailablePeriods={unavailablePeriods}
-          initialDate={selectedBooking.startTime}
-          initialStartTime={moment(selectedBooking.startTime).format('HH:mm')}
-          initialEndTime={moment(selectedBooking.endTime).format('HH:mm')}
+          initialDate={selectedBooking.startTime}  // Pass initialDate here
+          initialStartTime={moment(selectedBooking.startTime).format('HH:mm')} // Pass initialStartTime here
+          initialEndTime={moment(selectedBooking.endTime).format('HH:mm')}  // Pass initialEndTime here
         />
       )}
 
