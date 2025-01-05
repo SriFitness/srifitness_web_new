@@ -5,9 +5,10 @@ import { ThemeProvider } from "@/features/admin/components/theme-provider"
 import { AuthProvider } from "@/components/providers/auth-provider"
 import { Toaster as ToasterSooner } from "sonner"
 import { Toaster as ToasterShadcn } from "@/components/ui/toaster"
-import { Loading } from "@/components/styles/loading"
 import { LoadingBar } from "@/components/styles/loading-bar"
 import { LoadingProvider } from "@/components/providers/LoadingContext"
+import { Suspense } from "react"
+import AppLoading from "./loading"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,14 +30,18 @@ export default function RootLayout({
             <AuthProvider>
                 <LoadingProvider>
                     <body className={inter.className}>
-                        <LoadingBar />
+                        <Suspense>
+                            <LoadingBar />
+                        </Suspense>
                         <ThemeProvider
                             attribute="class"
                             defaultTheme="system"
                             enableSystem
                             disableTransitionOnChange
                         >
-                            {children}
+                            <Suspense fallback={<AppLoading />}>
+                                {children}
+                            </Suspense>
                             <ToasterSooner position="top-right" expand={true} richColors />
                             <ToasterShadcn />
                         </ThemeProvider>

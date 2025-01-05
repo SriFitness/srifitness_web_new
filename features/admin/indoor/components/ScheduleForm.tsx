@@ -17,17 +17,16 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 const formSchema = z.object({
-  title: z.string().min(2, {
-    message: 'Title must be at least 2 characters.',
-  }),
+  title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
   start: z.string(),
   end: z.string(),
+  reason: z.string().optional(),
 })
 
 interface ScheduleFormProps {
   onSubmit: (data: z.infer<typeof formSchema>) => void
   onCancel: () => void
-  initialData?: z.infer<typeof formSchema> | null
+  initialData?: Partial<z.infer<typeof formSchema>> | null
 }
 
 export function ScheduleForm({ onSubmit, onCancel, initialData }: ScheduleFormProps) {
@@ -39,6 +38,7 @@ export function ScheduleForm({ onSubmit, onCancel, initialData }: ScheduleFormPr
       title: '',
       start: '',
       end: '',
+      reason: '',
     },
   })
 
@@ -105,6 +105,19 @@ export function ScheduleForm({ onSubmit, onCancel, initialData }: ScheduleFormPr
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="reason"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Reason (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter reason (if any)" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancel
@@ -117,4 +130,3 @@ export function ScheduleForm({ onSubmit, onCancel, initialData }: ScheduleFormPr
     </Dialog>
   )
 }
-

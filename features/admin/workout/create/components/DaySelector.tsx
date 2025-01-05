@@ -1,29 +1,32 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const days = [
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
-  { value: 7, label: 'Sunday' },
+  { value: 'Day 1', label: 'Day 1' },
+  { value: 'Day 2', label: 'Day 2' },
+  { value: 'Day 3', label: 'Day 3' },
+  { value: 'Day 4', label: 'Day 4' },
+  { value: 'Day 5', label: 'Day 5' },
+  { value: 'Day 6', label: 'Day 6' },
+  { value: 'Day 7', label: 'Day 7' },
 ]
 
 interface DaySelectorProps {
-  value: number | null
-  onChange: (value: number) => void
+  value: string | null
+  onChange: (value: string) => void
+  excludeDays: string[]
 }
 
-export default function DaySelector({ value, onChange }: DaySelectorProps) {
+export function DaySelector({ value, onChange, excludeDays }: DaySelectorProps) {
+  const availableDays = days.filter(day => !excludeDays.includes(day.value))
+
   return (
-    <Select value={value?.toString()} onValueChange={(val) => onChange(parseInt(val))}>
+    <Select value={value || undefined} onValueChange={onChange}>
       <SelectTrigger className="w-[200px]">
         <SelectValue placeholder="Select day" />
       </SelectTrigger>
       <SelectContent>
-        {days.map((day) => (
-          <SelectItem key={day.value} value={day.value.toString()}>
+        {availableDays.map((day) => (
+          <SelectItem key={day.value} value={day.value}>
             {day.label}
           </SelectItem>
         ))}

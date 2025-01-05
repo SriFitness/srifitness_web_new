@@ -1,137 +1,264 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { DaySelector } from './DaySelector'
 import ExerciseSelector from './ExerciseSelector'
-import DaySelector from './DaySelector'
-import ExerciseTable from './ExerciseTable'
-import { Plus } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
+import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
+import { reorderWithEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/reorder-with-edge'
+import { triggerPostMoveFlash } from '@atlaskit/pragmatic-drag-and-drop-flourish/trigger-post-move-flash'
+import { flushSync } from 'react-dom'
+import { Exercise, WorkoutGroup, isWorkoutData } from './dnd/workout-data'
+import { ExerciseItem } from './dnd/exercise-item'
+import { WorkoutList } from './WorkoutList'
 
-interface Exercise {
-  id: string;
-  bodyPart: string;
-  subPart: string;
-  exercise: string;
-  times: number;
-  sets: number;
-}
+const createEmptyExercise = (): Exercise => ({
+  id: crypto.randomUUID(),
+  bodyPart: '',
+  subPart: '',
+  exercise: '',
+  times: 8,
+  sets: 3,
+})
 
-interface WorkoutGroup {
-  id: string;
-  bodyPart: string;
-  exercises: Exercise[];
-  day: number | null;
-}
+const createEmptyGroup = (day: string): WorkoutGroup => ({
+  id: crypto.randomUUID(),
+  bodyPart: '',
+  exercises: [createEmptyExercise()],
+  day,
+})
 
 export default function WorkoutCreationForm() {
+  const [selectedDays, setSelectedDays] = useState<string[]>([])
   const [workoutGroups, setWorkoutGroups] = useState<WorkoutGroup[]>([])
+  const [currentDay, setCurrentDay] = useState<string | null>(null)
 
-  const handleAddExercise = () => {
-    setWorkoutGroups([...workoutGroups, {
-      id: Date.now().toString(),
-      bodyPart: '',
-      exercises: [{
-        id: Date.now().toString(),
-        bodyPart: '',
-        subPart: '',
-        exercise: '',
-        times: 8,
-        sets: 3
-      }],
-      day: null
-    }])
-  }
-
-  const handleExerciseChange = (groupIndex: number, exerciseIndex: number, field: keyof Exercise, value: any) => {
-    const updatedGroups = [...workoutGroups]
-    if (field === 'bodyPart') {
-      updatedGroups[groupIndex].bodyPart = value
+  useEffect(() => {
+    if (currentDay) {
+      const existingGroup = workoutGroups.find(group => group.day === currentDay)
+      if (!existingGroup) {
+        const newGroup = createEmptyGroup(currentDay)
+        setWorkoutGroups(prev => [...prev, newGroup])
+      }
     }
-    updatedGroups[groupIndex].exercises[exerciseIndex] = { ...updatedGroups[groupIndex].exercises[exerciseIndex], [field]: value }
-    setWorkoutGroups(updatedGroups)
-  }
+  }, [currentDay, workoutGroups])
 
-  const handleAddExerciseToGroup = (groupIndex: number) => {
-    const updatedGroups = [...workoutGroups]
-    updatedGroups[groupIndex].exercises.push({
-      id: Date.now().toString(),
-      bodyPart: updatedGroups[groupIndex].bodyPart,
-      subPart: '',
-      exercise: '',
-      times: 8,
-      sets: 3
+  useEffect(() => {
+    return monitorForElements({
+      canMonitor({ source }) {
+        return isWorkoutData(source.data)
+      },
+      onDrop({ location, source }) {
+        const target = location.current.dropTargets[0]
+        if (!target) {
+          return
+        }
+
+        const sourceData = source.data
+        const targetData = target.data
+
+        if (!isWorkoutData(sourceData) || !isWorkoutData(targetData)) {
+          return
+        }
+
+        const sourceGroup = workoutGroups.find(g => g.id === sourceData.groupId)
+        const targetGroup = workoutGroups.find(g => g.id === targetData.groupId)
+
+        if (!sourceGroup || !targetGroup) {
+          return
+        }
+
+        if (sourceData.exerciseId && targetData.exerciseId) {
+          const sourceExercise = sourceGroup.exercises.find(e => e.id === sourceData.exerciseId)
+          const targetExercise = targetGroup.exercises.find(e => e.id === targetData.exerciseId)
+
+          if (!sourceExercise || !targetExercise) {
+            return
+          }
+
+          const sourceIndex = sourceGroup.exercises.indexOf(sourceExercise)
+          const targetIndex = targetGroup.exercises.indexOf(targetExercise)
+          const closestEdge = extractClosestEdge(targetData)
+
+          flushSync(() => {
+            if (sourceGroup.id === targetGroup.id) {
+              // Reordering within the same group
+              const newExercises = reorderWithEdge({
+                list: sourceGroup.exercises,
+                startIndex: sourceIndex,
+                indexOfTarget: targetIndex,
+                closestEdgeOfTarget: closestEdge,
+                axis: 'vertical',
+              })
+
+              setWorkoutGroups(groups =>
+                groups.map(g =>
+                  g.id === sourceGroup.id ? { ...g, exercises: newExercises } : g
+                )
+              )
+            } else {
+              // Moving between groups
+              const newSourceExercises = sourceGroup.exercises.filter(e => e.id !== sourceExercise.id)
+              const newTargetExercises = [...targetGroup.exercises]
+              newTargetExercises.splice(
+                closestEdge === 'bottom' ? targetIndex + 1 : targetIndex,
+                0,
+                sourceExercise
+              )
+
+              setWorkoutGroups(groups =>
+                groups.map(g => {
+                  if (g.id === sourceGroup.id) {
+                    return { ...g, exercises: newSourceExercises }
+                  }
+                  if (g.id === targetGroup.id) {
+                    return { ...g, exercises: newTargetExercises }
+                  }
+                  return g
+                })
+              )
+            }
+          })
+
+          const element = document.querySelector(`[data-exercise-id="${sourceExercise.id}"]`)
+          if (element instanceof HTMLElement) {
+            triggerPostMoveFlash(element)
+          }
+        }
+      },
     })
-    setWorkoutGroups(updatedGroups)
+  }, [workoutGroups])
+
+  const handleDaySelect = (day: string) => {
+    if (!selectedDays.includes(day)) {
+      setSelectedDays([...selectedDays, day])
+      setCurrentDay(day)
+    }
   }
 
-  const handleDayChange = (groupIndex: number, day: number) => {
-    const updatedGroups = [...workoutGroups]
-    updatedGroups[groupIndex].day = day
-    setWorkoutGroups(updatedGroups)
+  const handleDayRemove = (day: string) => {
+    setSelectedDays(selectedDays.filter(d => d !== day))
+    setWorkoutGroups(workoutGroups.filter(g => g.day !== day))
+    if (currentDay === day) {
+      setCurrentDay(null)
+    }
   }
 
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleExerciseChange = (day: string, exerciseIndex: number, field: keyof Exercise, value: any) => {
+    setWorkoutGroups(groups =>
+      groups.map(group =>
+        group.day === day
+          ? {
+              ...group,
+              exercises: group.exercises.map((exercise, index) =>
+                index === exerciseIndex
+                  ? { ...exercise, [field]: value }
+                  : exercise
+              ),
+            }
+          : group
+      )
+    )
+  }
 
-    const sourceGroupId = result.source.droppableId
-    const destGroupId = result.destination.droppableId
-    const sourceIndex = result.source.index
-    const destIndex = result.destination.index
+  const handleAddExercise = (day: string) => {
+    setWorkoutGroups(groups =>
+      groups.map(group =>
+        group.day === day
+          ? { ...group, exercises: [...group.exercises, createEmptyExercise()] }
+          : group
+      )
+    )
+  }
 
-    const updatedGroups = [...workoutGroups]
-    const sourceGroupIndex = updatedGroups.findIndex(group => group.id === sourceGroupId)
-    const destGroupIndex = updatedGroups.findIndex(group => group.id === destGroupId)
-
-    const [reorderedItem] = updatedGroups[sourceGroupIndex].exercises.splice(sourceIndex, 1)
-    updatedGroups[destGroupIndex].exercises.splice(destIndex, 0, reorderedItem)
-
-    setWorkoutGroups(updatedGroups)
+  const handleRemoveExercise = (day: string, exerciseId: string) => {
+    setWorkoutGroups(groups =>
+      groups.map(group =>
+        group.day === day
+          ? { ...group, exercises: group.exercises.filter(e => e.id !== exerciseId) }
+          : group
+      )
+    )
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (workoutGroups.some(group => group.exercises.some(ex => !ex.bodyPart || !ex.subPart || !ex.exercise || !ex.times || !ex.sets))) {
-      alert('Please fill in all exercise fields')
-      return
-    }
-    if (workoutGroups.some(group => group.day === null)) {
-      alert('Please assign a day to all workout groups')
-      return
-    }
-    console.log('Workout created:', workoutGroups)
-    // Here you would typically send this data to your backend
+    console.log('Workout plan:', workoutGroups)
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div className="space-y-8">
       <Card>
-        <CardContent className="space-y-6">
-          {workoutGroups.map((group, groupIndex) => (
-            <div key={group.id} className="space-y-4 border p-4 rounded">
-              <h3 className="text-lg font-semibold">{group.bodyPart || 'New Workout Group'}</h3>
-              {group.exercises.map((exercise, exerciseIndex) => (
-                <ExerciseSelector
-                  key={exercise.id}
-                  value={exercise}
-                  onChange={(field, value) => handleExerciseChange(groupIndex, exerciseIndex, field, value)}
-                  isFirstInGroup={exerciseIndex === 0}
-                />
+        <CardContent className="pt-6">
+          <div className="flex items-center space-x-2 mb-6">
+            {selectedDays.map(day => (
+              <div key={day} className="flex items-center">
+                <Button
+                  variant={currentDay === day ? "default" : "outline"}
+                  onClick={() => setCurrentDay(day)}
+                >
+                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDayRemove(day)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <DaySelector
+              value={null}
+              onChange={handleDaySelect}
+              excludeDays={selectedDays}
+            />
+          </div>
+          {currentDay && (
+            <div className="space-y-6">
+              {workoutGroups.find(g => g.day === currentDay)?.exercises.map((exercise, index) => (
+                <Card key={exercise.id} className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-semibold">Exercise {index + 1}</h3>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveExercise(currentDay, exercise.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <ExerciseSelector
+                    value={exercise}
+                    onChange={(field, value) => handleExerciseChange(currentDay, index, field as keyof Exercise, value)}
+                    isFirstInGroup={index === 0}
+                  />
+                  <ExerciseItem
+                    exercise={exercise}
+                    group={workoutGroups.find(g => g.day === currentDay)!}
+                    isFirstInGroup={index === 0}
+                  />
+                </Card>
               ))}
-              <Button type="button" onClick={() => handleAddExerciseToGroup(groupIndex)} variant="outline" size="sm">
-                <Plus className="mr-2 h-4 w-4" /> Add Exercise to Group
+              <Button
+                type="button"
+                onClick={() => handleAddExercise(currentDay)}
+                variant="outline"
+                size="sm"
+              >
+                <Plus className="mr-2 h-4 w-4" /> Add Exercise
               </Button>
-              <DaySelector value={group.day} onChange={(day) => handleDayChange(groupIndex, day)} />
             </div>
-          ))}
-          <Button type="button" onClick={handleAddExercise} variant="outline" className="w-full">
-            <Plus className="mr-2 h-4 w-4" /> Add New Workout Group
-          </Button>
-          <ExerciseTable workoutGroups={workoutGroups} onDragEnd={handleDragEnd} />
-          <Button type="submit">Create Workout</Button>
+          )}
         </CardContent>
       </Card>
-    </form>
+      <WorkoutList workoutGroups={workoutGroups} onReorder={setWorkoutGroups} />
+      <Button type="submit" onClick={handleSubmit} className="w-full">Save Workout Plan</Button>
+    </div>
   )
 }
 

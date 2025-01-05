@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface WaveSkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const WaveSkeleton = React.forwardRef<HTMLDivElement, WaveSkeletonProps>(

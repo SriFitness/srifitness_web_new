@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { realtimeDB, auth } from '@/firebase/server'
 
-export async function PUT(request: NextRequest, { params }: { params: { userId: string, scheduleId: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ userId: string, scheduleId: string }> }) {
   const {  userId , scheduleId } = await params;
   const id = userId;
   try {
