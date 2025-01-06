@@ -4,7 +4,7 @@ import { useCart, CartItem as CartItemType } from '@/components/providers/CartCo
 import { Button } from '@/components/ui/button'
 import { Minus, Plus, X } from 'lucide-react'
 
-interface CartItemProps {
+interface CartItemProps {                                                // CartItemProps interface for the CartItem component
   item: CartItemType
 }
 
