@@ -8,18 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const localizer: DateLocalizer = momentLocalizer(moment)
 
-interface Event {
+interface Event {                                               // Event interface for the calendar
     id: number | string;
     title: string;
     start: Date;
     end: Date;
 }
 
-interface BookingCalendarProps {
+interface BookingCalendarProps {                               // BookingCalendarProps interface
     events: Event[];
 }
 
-export function BookingCalendar({ events }: BookingCalendarProps) {
+export function BookingCalendar({ events }: BookingCalendarProps) {             // BookingCalendar function component
     const [view, setView] = useState<View>('week')
     const [isMobile, setIsMobile] = useState(false)
 
@@ -55,7 +55,7 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
         setView(newView as View)
     }
 
-    const formats: Formats = {
+    const formats: Formats = {                                                                                              // Formats for the calendar view
         timeGutterFormat: (date: Date, culture?: string, localizer?: DateLocalizer) =>
             localizer?.format(date, 'HH:mm', culture) || '',
         eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }, culture?: string, localizer?: DateLocalizer) =>
