@@ -207,7 +207,7 @@ export default function Navbar() {
                     whileHover={{ scale: 1.05, backgroundColor: '#F9A826' }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleLogin}
-                    className="bg-[#E96A25] hover:bg-[#F9A826] text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg"
+                    className="bg-[#E96A25] w-full hover:bg-[#F9A826] text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg"
                   >
                     Login
                   </motion.button>
@@ -219,7 +219,7 @@ export default function Navbar() {
                     <Button
                       key={item.name}
                       onClick={item.action}
-                      className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#E96A25] hover:text-white"
+                      className="block w-full px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#E96A25] hover:text-white"
                     >
                       {item.name}
                     </Button>

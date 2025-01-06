@@ -1,8 +1,8 @@
 'use client'
 
+import React from "react"
 import Link from "next/link"
-import { useState } from "react"
-import { Search, ShoppingCart, Heart, Menu, Phone, User } from 'lucide-react'
+import { Search, ShoppingCart, Heart, Phone } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -13,16 +13,14 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
 import { Input } from "@/components/ui/input"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import styles from '@/app/(root)/marketplace/Marketplace.module.css'
+import { useCart } from '@/components/providers/CartContext'
+import { Badge } from '@/components/ui/badge'
 
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { cart, setIsCartOpen, isLoaded } = useCart()
+
+  const cartItemCount = isLoaded ? cart.reduce((sum, item) => sum + item.quantity, 0) : 0
 
   return (
     <header className={`border-b ${styles.marketplaceHeader}`}>
@@ -60,9 +58,17 @@ export function Header() {
             <Button variant="ghost" size="icon">
               <Heart className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="h-5 w-5" />
-            </Button>
+            {/* Wrap cart icon and badge in a relative container */}
+            <div className="relative">
+              <Button variant="ghost" size="icon" onClick={() => setIsCartOpen(true)}>
+                <ShoppingCart className="h-5 w-5" />
+              </Button>
+              {cartItemCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-1 -right-1 px-1 min-w-[1.25rem] h-5">
+                  {cartItemCount}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 

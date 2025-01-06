@@ -1,20 +1,51 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import styles from '@/app/(root)/marketplace/Marketplace.module.css'
+import { Product } from '@/types/product'
 
-const MarketplacePage = () => {
+interface ProductsTableProps {
+  initialProducts: Product[]
+}
+
+const ProductCard = ({ product }: { product: Product }) => (
+  <Link href={`/marketplace/product/${product.id}`} passHref>
+    <Card className="cursor-pointer transition-shadow hover:shadow-lg">
+      <CardContent className="p-4">
+        <div className="relative h-[200px]"> {/* Set a fixed height for the image container */}
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill // Use fill to make the image responsive
+            sizes="(max-width: 768px) 100vw, 50vw" // Define sizes for responsive loading
+            className="rounded-lg object-contain" // Ensures the full image is shown while maintaining aspect ratio
+          />
+        </div>
+        <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
+        <p className="text-muted-foreground mb-2">
+          {product.quantity} in stock
+        </p>
+        <p className="font-bold text-lg">${product.price.toFixed(2)}</p>
+      </CardContent>
+    </Card>
+  </Link>
+);
+const MarketplacePage = ({ initialProducts }: ProductsTableProps) => {
+  const equipmentProducts = initialProducts.filter(product => product.category === 'equipment')
+  const supplementProducts = initialProducts.filter(product => product.category === 'supplement')
+
   return (
     <div className={styles.marketplacePage}>
       {/* Hero Section */}
       <section className="relative h-[600px] flex items-center">
         <Image
           src="/placeholder.svg?height=600&width=1920"
-          alt="Fitness Equipment"
+          alt="Fitness Equipment and Supplements"
           fill
           className="object-cover"
           priority
@@ -44,104 +75,16 @@ const MarketplacePage = () => {
           </TabsList>
           <TabsContent value="equipment">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              <Card>
-                <CardContent className="p-4">
-                  <Image
-                    src="/placeholder.svg?height=200&width=300"
-                    alt="Treadmills"
-                    width={300}
-                    height={200}
-                    className="rounded-lg mb-4"
-                  />
-                  <h3 className="text-xl font-semibold mb-2">Treadmills</h3>
-                  <p className="text-muted-foreground">
-                    Professional grade treadmills for home and commercial use
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <Image
-                    src="/placeholder.svg?height=200&width=300"
-                    alt="Exercise Bikes"
-                    width={300}
-                    height={200}
-                    className="rounded-lg mb-4"
-                  />
-                  <h3 className="text-xl font-semibold mb-2">Exercise Bikes</h3>
-                  <p className="text-muted-foreground">
-                    High-quality exercise bikes for effective cardio workouts
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <Image
-                    src="/placeholder.svg?height=200&width=300"
-                    alt="Weights"
-                    width={300}
-                    height={200}
-                    className="rounded-lg mb-4"
-                  />
-                  <h3 className="text-xl font-semibold mb-2">
-                    Weights & Dumbbells
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Complete range of free weights and dumbbells
-                  </p>
-                </CardContent>
-              </Card>
+              {equipmentProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
           </TabsContent>
           <TabsContent value="supplements">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              <Card>
-                <CardContent className="p-4">
-                  <Image
-                    src="/placeholder.svg?height=200&width=300"
-                    alt="Protein"
-                    width={300}
-                    height={200}
-                    className="rounded-lg mb-4"
-                  />
-                  <h3 className="text-xl font-semibold mb-2">Protein</h3>
-                  <p className="text-muted-foreground">
-                    Premium whey protein and mass gainers
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <Image
-                    src="/placeholder.svg?height=200&width=300"
-                    alt="Pre-Workout"
-                    width={300}
-                    height={200}
-                    className="rounded-lg mb-4"
-                  />
-                  <h3 className="text-xl font-semibold mb-2">Pre-Workout</h3>
-                  <p className="text-muted-foreground">
-                    Energy and focus supplements for maximum performance
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <Image
-                    src="/placeholder.svg?height=200&width=300"
-                    alt="Vitamins"
-                    width={300}
-                    height={200}
-                    className="rounded-lg mb-4"
-                  />
-                  <h3 className="text-xl font-semibold mb-2">
-                    Vitamins & Minerals
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Essential supplements for overall health
-                  </p>
-                </CardContent>
-              </Card>
+              {supplementProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
           </TabsContent>
         </Tabs>
@@ -164,3 +107,4 @@ const MarketplacePage = () => {
 }
 
 export default MarketplacePage
+

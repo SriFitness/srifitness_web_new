@@ -1,3 +1,5 @@
+//app/layout.tsx
+
 import type { Metadata } from "next"
 import { Inter } from 'next/font/google'
 import "./globals.css"
@@ -8,7 +10,9 @@ import { Toaster as ToasterShadcn } from "@/components/ui/toaster"
 import { LoadingBar } from "@/components/styles/loading-bar"
 import { LoadingProvider } from "@/components/providers/LoadingContext"
 import { Suspense } from "react"
-import AppLoading from "./loading"
+import Loading from "./loading"
+import { CartProvider } from "@/components/providers/CartContext"
+import { Cart } from "@/features/root/marketplace/cart/components/Cart"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,23 +33,26 @@ export default function RootLayout({
             </head>
             <AuthProvider>
                 <LoadingProvider>
-                    <body className={inter.className}>
-                        <Suspense>
-                            <LoadingBar />
-                        </Suspense>
-                        <ThemeProvider
-                            attribute="class"
-                            defaultTheme="system"
-                            enableSystem
-                            disableTransitionOnChange
-                        >
-                            <Suspense fallback={<AppLoading />}>
-                                {children}
+                    <CartProvider>
+                        <body className={inter.className}>
+                            <Suspense>
+                                <LoadingBar />
                             </Suspense>
-                            <ToasterSooner position="top-right" expand={true} richColors />
-                            <ToasterShadcn />
-                        </ThemeProvider>
-                    </body>
+                            <ThemeProvider
+                                attribute="class"
+                                defaultTheme="system"
+                                enableSystem
+                                disableTransitionOnChange
+                            >
+                                <Suspense fallback={<Loading />}>
+                                    {children}
+                                </Suspense>
+                                <ToasterSooner position="top-right" expand={true} richColors />
+                                <ToasterShadcn />
+                                <Cart />
+                            </ThemeProvider>
+                        </body>
+                    </CartProvider>
                 </LoadingProvider>
             </AuthProvider>
         </html>
