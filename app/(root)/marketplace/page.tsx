@@ -1,12 +1,18 @@
-import { Header } from "@/features/root/marketplace/components/Header";
 import MarketplacePage from "@/features/root/marketplace/components/MarketplacePage";
-import styles from './Marketplace.module.css'
+import { getProducts } from "@/features/root/marketplace/server/actions/products";
+import { Product } from "@/types/product";
+import { Suspense } from "react";
+import Loading from "./loading";
 
-export default function Page() {
+export default async function Page() {
+
+  const products: Product[] = await getProducts();
+
   return (
-    <div className={`container mx-auto py-10 mt-24 ${styles.marketplaceContainer}`}>
-      <Header />
-      <MarketplacePage />
+    <div >
+      <Suspense fallback={<Loading />}>
+        <MarketplacePage initialProducts={products} />
+      </Suspense>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { 
@@ -13,9 +13,6 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { collection, getDocs } from 'firebase/firestore'
-import { firestore as db } from '@/firebase/client' // Make sure this import is correct
-import { WaveSkeleton } from "@/components/ui/wave-skeleton" // Import Skeleton
 import { Product } from "@/types/product"
 
 interface ProductsTableProps {

@@ -14,9 +14,9 @@ const slides = [
 ]
 
 const stats = [
-  { label: 'Happy Customers', value: 50000 },
+  { label: 'Happy Customers', value: 400 },
   { label: 'Workout Plans', value: 200 },
-  { label: 'Expert Trainers', value: 50 },
+  { label: 'Expert Trainers', value: 10 },
 ]
 
 // Counter Component
