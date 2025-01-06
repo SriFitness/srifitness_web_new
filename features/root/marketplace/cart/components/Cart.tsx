@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { CartItem } from './CartItem';
 import { useRouter } from 'next/navigation';
 
-export const Cart: React.FC = () => {
+export const Cart: React.FC = () => {                                                           // Cart function component for the Cart component
   const { cart, isCartOpen, setIsCartOpen, clearCart } = useCart();
   const router = useRouter();
 
