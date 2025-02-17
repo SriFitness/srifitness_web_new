@@ -85,6 +85,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         },
                     });
 
+                    console.log(response);
+
                     if (response.ok) {
                         const { role } = await response.json();
                         const normalizedRole = role.trim().toLowerCase();

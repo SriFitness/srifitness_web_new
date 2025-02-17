@@ -8,6 +8,7 @@ interface User {
     role: string;
     email?: string;
     phone?: string;
+    status?: 'new' | 'attention' | 'ok';
 }
 
 export async function GET(request: NextRequest) {
@@ -45,17 +46,57 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ message: "No users found" }, { status: 404 });
         }
 
-        // Map the documents to the User interface and filter by role
-        const users: User[] = userDetailsSnapshot.docs
-            .map((doc) => {
-                const data = doc.data() as User;
-                return {
-                    ...data,
-                    id: doc.id, // Use the `id` from Firestore if it's not already present
-                };
-            });
+        // Map the documents and check for required collections
+        const users: User[] = await Promise.all(userDetailsSnapshot.docs.map(async (doc) => {
+            const data = doc.data() as User;
+            const userId = doc.id;
 
-        // Return the filtered users
+            // Check for medical-inquiries
+            if (!firestore) {
+                throw new Error("Firestore is not initialized");
+            }
+
+            const medicalInquiriesDoc = await firestore
+                .collection("user-details")
+                .doc(userId)
+                .collection("medical-inquiries")
+                .limit(1)
+                .get();
+
+            // Check for personal-details
+            const personalDetailsDoc = await firestore
+                .collection("user-details")
+                .doc(userId)
+                .collection("personal-details")
+                .limit(1)
+                .get();
+
+            // Check for workout-details
+            const workoutDetailsDoc = await firestore
+                .collection("user-details")
+                .doc(userId)
+                .collection("workout-details")
+                .limit(1)
+                .get();
+
+            // Determine status
+            let status: 'new' | 'attention' | 'ok' = 'new';
+            
+            if (!medicalInquiriesDoc.empty && !personalDetailsDoc.empty) {
+                if (workoutDetailsDoc.empty) {
+                    status = 'attention';
+                } else {
+                    status = 'ok';
+                }
+            }
+
+            return {
+                ...data,
+                id: userId,
+                status
+            };
+        }));
+
         return NextResponse.json(users, { status: 200 });
 
 

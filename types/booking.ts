@@ -1,3 +1,5 @@
+import { User } from "firebase/auth"
+
 export interface Booking {
   id: string
   scheduleNumber?: string
@@ -15,8 +17,7 @@ export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed'
 export interface CreateBookingDTO {
   startTime: Date
   endTime: Date
-  userId: string
-  userName: string
+  user: User
 }
 
 export interface UpdateBookingDTO {

@@ -11,7 +11,7 @@ export class BookingService {
     try {
       const newBooking = {
         ...booking,
-        id: `${booking.userId}_${Date.now()}`,
+        id: `${booking.user.uid}_${Date.now()}`,
         status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date(),

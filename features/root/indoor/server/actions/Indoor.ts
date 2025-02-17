@@ -5,10 +5,7 @@ import { updateSchedule as updateScheduleFn } from "../db/update-schedule";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useBookingService } from "@/hooks/useBookingService";
 
-export const createSchedule = async (data: any) => {
-  const result = await createScheduleFn(data);
-  return result;
-};
+export const createSchedule = createScheduleFn
 
 export const getSchedules = getSchedulesFn;
 

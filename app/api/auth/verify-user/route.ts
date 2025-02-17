@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
+    const authHeader = request.headers.get('Authorization')
     const requestedUserId = request.headers.get('RequestedUserId')
 
     if (!authHeader?.startsWith('Bearer ') || !requestedUserId) {

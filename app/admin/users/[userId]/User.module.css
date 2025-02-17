@@ -1,0 +1,226 @@
+/* Smooth transition for hiding/showing */
+.futuristic-container {
+    background: linear-gradient(145deg, #ffffff, #f3f4f6);
+    /* Subtle white-to-light grey gradient */
+    border-radius: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    /* Soft shadow for depth */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    /* Smooth opacity and transform transitions */
+    opacity: 1;
+    /* Fully visible by default */
+    transform: translateY(0);
+    /* Default position */
+}
+
+.futuristic-container.hide {
+    opacity: 0;
+    /* Hidden */
+    transform: translateY(-20px);
+    /* Slide up slightly */
+    pointer-events: none;
+    /* Prevent interaction when hidden */
+}
+
+/* Card with clean design */
+.futuristic-card {
+    background: #ffffff;
+    /* Pure white background */
+    border: 1px solid #e5e7eb;
+    /* Light grey border */
+    border-radius: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow for a clean look */
+    overflow: hidden;
+    padding: 1.5rem;
+    /* Padding for consistent spacing */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    /* Smooth opacity and transform transitions */
+}
+
+.futuristic-card.hide {
+    opacity: 0;
+    transform: translateY(-20px);
+    /* Slide up when hidden */
+    pointer-events: none;
+    /* Disable interactions */
+}
+
+/* Button with interactive hover effects */
+.futuristic-button {
+    background: #f9fafb;
+    /* Very light grey for buttons */
+    color: #4b5563;
+    /* Neutral grey for text */
+    border: 1px solid #d1d5db;
+    /* Light grey border */
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    /* Pointer cursor for buttons */
+    transition: all 0.3s ease-in-out;
+    /* Smooth transition for hover effects */
+}
+
+.futuristic-button:hover {
+    background: #f3f4f6;
+    /* Slightly darker grey on hover */
+    color: #374151;
+    /* Darker grey text on hover */
+    transform: scale(1.02);
+    /* Subtle scaling effect */
+}
+
+/* Glow effect for specific elements */
+.futuristic-glow {
+    box-shadow: 0 0 10px rgba(229, 231, 235, 0.5);
+    /* Soft light grey glow */
+    transition: opacity 0.3s ease, box-shadow 0.3s ease;
+    /* Add fade and shadow transition */
+}
+
+.futuristic-glow:hover {
+    box-shadow: 0 0 15px rgba(229, 231, 235, 0.7);
+    /* Enhanced glow on hover */
+}
+
+.arrow-icon {
+    display: inline-block;
+    font-size: 1.25rem;
+    /* Adjust size as needed */
+    transform: rotate(0deg);
+    transition: transform 0.3s ease;
+    /* Smooth rotation transition */
+}
+
+.arrow-icon.open {
+    transform: rotate(90deg);
+    /* Rotate 90 degrees when open */
+}
+
+/* Collapsible content */
+.collapsible-content {
+    max-height: 0;
+    /* Collapsed height */
+    overflow: hidden;
+    /* Hide overflowing content */
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    /* Smooth transition */
+    opacity: 0;
+    /* Fully hidden */
+}
+
+.collapsible-content.show {
+    max-height: 500px;
+    /* Adjust max height for your content */
+    opacity: 1;
+    /* Fully visible */
+}
+
+.collapsible-content.hide {
+    max-height: 0;
+    opacity: 0;
+}
+
+
+/* Table container styling */
+.workout-table-container {
+    width: 100%;
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    background: #f9fafb;
+  }
+  
+  /* Table styling */
+  .workout-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  /* Table header and cell styling */
+  .workout-table th,
+  .workout-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  /* Header styling */
+  .workout-table th {
+    background: #f3f4f6;
+    font-weight: bold;
+  }
+  
+  /* Status indicators for workout plans */
+  .status-ok {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 0.25rem;
+    font-weight: bold;
+  }
+  
+  .status-expired {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 0.25rem;
+    font-weight: bold;
+  }
+  
+  /* Button styling for info button */
+  .info-button {
+    padding: 0.5rem 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Hover effect for info button */
+  .info-button:hover {
+    background: #1d4ed8;
+  }
+  
+  /* Styling for workout details section */
+  .workout-details {
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    background: #f3f4f6;
+  }
+  
+  /* Workout details header */
+  .workout-details h3 {
+    margin-bottom: 1rem;
+  }
+  
+  /* Workout details paragraphs */
+  .workout-details p {
+    margin: 0.5rem 0;
+  }
+  
+  /* Close button for workout details */
+  .close-button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: #e5e7eb;
+    color: #374151;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Hover effect for close button */
+  .close-button:hover {
+    background: #d1d5db;
+  }
+  

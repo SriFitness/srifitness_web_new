@@ -1,5 +1,5 @@
-import { firestore, auth } from "@/firebase/server";
-import { DecodedIdToken } from "firebase-admin/auth";
+//app/api/user-details/[userId]/route.ts
+import { firestore } from "@/firebase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 
@@ -10,21 +10,33 @@ export async function GET(
     const { userId } = await params;
 
     try {
-        if (!firestore)
-            return new NextResponse("Internal Error", { status: 500 });
+        if (!firestore) {
+            return new NextResponse("Internal Error: Firestore is not initialized", { status: 500 });
+        }
 
-        const authToken =
-            request.headers.get("authorization")?.split("Bearer ")[1] || null;
+        const authToken = request.headers.get("authorization")?.split("Bearer ")[1] || null;
 
-        let user: DecodedIdToken | null = null;
-        if (auth && authToken)
-            try {
-                user = await auth.verifyIdToken(authToken);
-            } catch (error) {
-                console.log("auth or auth token")
-                // One possible error is the token being expired, return forbidden
-                console.log(error);
-            }
+        if (!authToken) {
+            return new NextResponse("Unauthorized: Missing auth token", { status: 401 });
+        }
+
+        const verifyAdmin = await fetch(`${request.nextUrl.origin}/api/auth/verify-admin`, {
+            headers: {
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+
+        if (!verifyAdmin.ok){
+            return new NextResponse("Unauthorized Access!", { status: 401 });
+        }
+
+        
+
+        const { role } = await verifyAdmin.json();
+
+        if (role !== "admin") {
+            return new NextResponse("Forbidden: Only admins and users can access user data", { status: 403 });
+        }
 
         const userDoc = await firestore
             .collection('user-details')
@@ -45,7 +57,8 @@ export async function GET(
         }
 
         // Only admin or user can delete user info
-        const valid = user?.uid === userId || userData.role === 'admin';
+        // const valid = user?.uid === userId || userData.role === 'admin';
+        const valid = userData.role === 'admin';
         if (!valid) return new NextResponse("Unauthorized", { status: 401 });
 
         return NextResponse.json(userData, { status: 200 });

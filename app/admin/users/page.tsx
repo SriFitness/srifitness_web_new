@@ -1,16 +1,13 @@
-//root/app/admin/users/page.tsx
-
 import UserTable from '@/features/admin/users/components/UserTable'
+import { getUsers } from '@/features/admin/users/server/actions/users'
 import React from 'react'
 
-
-
-
-
-const UsersAdminPage = () => {
+export default async function UsersAdminPage() {
+    const users = await getUsers();
+    
     return (
-        <UserTable />
-
+        <div className="container mx-auto py-10">
+            <UserTable users={users}/>
+        </div>
     )
 }
-export default UsersAdminPage

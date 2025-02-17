@@ -144,8 +144,7 @@ export default function IndoorBookingPage() {
         second: 0,
         millisecond: 0
       }).toDate()),
-      userId: currentUser.uid,
-      userName: currentUser.displayName || 'Anonymous'
+      user: currentUser
     }
 
     try {

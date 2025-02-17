@@ -87,7 +87,7 @@ const data = {
       items: [
         {
           title: "Add new workouts",
-          url: "/admin/workout/add",
+          url: "/admin/workout/create",
         },
         {
           title: "Get Started",

@@ -14,6 +14,8 @@ import { flushSync } from 'react-dom'
 import { Exercise, WorkoutGroup, isWorkoutData } from './dnd/workout-data'
 import { ExerciseItem } from './dnd/exercise-item'
 import { WorkoutList } from './WorkoutList'
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 const createEmptyExercise = (): Exercise => ({
   id: crypto.randomUUID(),
@@ -31,10 +33,12 @@ const createEmptyGroup = (day: string): WorkoutGroup => ({
   day,
 })
 
-export default function WorkoutCreationForm() {
+export default function WorkoutCreationForm({ userId }: { userId: string }) {
   const [selectedDays, setSelectedDays] = useState<string[]>([])
   const [workoutGroups, setWorkoutGroups] = useState<WorkoutGroup[]>([])
   const [currentDay, setCurrentDay] = useState<string | null>(null)
+  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (currentDay) {
@@ -132,6 +136,77 @@ export default function WorkoutCreationForm() {
     })
   }, [workoutGroups])
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate workout plan
+    if (workoutGroups.length === 0) {
+      toast.error("Please add at least one exercise to the workout plan");
+      return;
+    }
+
+    // Validate each group has exercises
+    const hasEmptyGroups = workoutGroups.some(group =>
+      group.exercises.length === 0 ||
+      group.exercises.some(exercise =>
+        !exercise.bodyPart || !exercise.subPart || !exercise.exercise
+      )
+    );
+
+    if (hasEmptyGroups) {
+      toast.error("Please complete all exercise details");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      toast.promise(
+        new Promise(async (resolve, reject) => {
+          try {
+            const response = await fetch('/api/workout/create', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId,
+                workoutGroups
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.error || 'Failed to create workout plan');
+            }
+
+            resolve(data);
+            router.push(`/admin/users/${userId}`);
+          } catch (error) {
+            reject(error instanceof Error ? error.message : 'Failed to create workout plan');
+          }
+        }),
+        {
+          loading: 'Creating workout plan...',
+          success: () => {
+            return `Workout plan has been successfully created!`;
+          },
+          error: (error) => {
+            return `Error: ${error}`;
+          },
+          finally: () => {
+            setIsSubmitting(false);
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error creating workout:', error);
+      toast.error("Failed to create workout plan");
+      setIsSubmitting(false);
+    }
+  };
+
   const handleDaySelect = (day: string) => {
     if (!selectedDays.includes(day)) {
       setSelectedDays([...selectedDays, day])
@@ -153,13 +228,13 @@ export default function WorkoutCreationForm() {
       groups.map(group =>
         group.day === day
           ? {
-              ...group,
-              exercises: group.exercises.map((exercise, index) =>
-                index === exerciseIndex
-                  ? { ...exercise, [field]: value }
-                  : exercise
-              ),
-            }
+            ...group,
+            exercises: group.exercises.map((exercise, index) =>
+              index === exerciseIndex
+                ? { ...exercise, [field]: value }
+                : exercise
+            ),
+          }
           : group
       )
     )
@@ -185,10 +260,6 @@ export default function WorkoutCreationForm() {
     )
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Workout plan:', workoutGroups)
-  }
 
   return (
     <div className="space-y-8">
@@ -257,7 +328,12 @@ export default function WorkoutCreationForm() {
         </CardContent>
       </Card>
       <WorkoutList workoutGroups={workoutGroups} onReorder={setWorkoutGroups} />
-      <Button type="submit" onClick={handleSubmit} className="w-full">Save Workout Plan</Button>
+      <Button
+        type="submit"
+        onClick={handleSubmit}
+        className="w-full"
+        disabled={isSubmitting}
+      >{isSubmitting ? "Saving..." : "Save Workout Plan"}</Button>
     </div>
   )
 }
