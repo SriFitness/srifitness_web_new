@@ -6,6 +6,8 @@ import { PersonalDetails } from "@/features/admin/users/user/components/Personal
 import { MedicalInquiries } from "@/features/admin/users/user/components/MedicalInquiries";
 import { UserImage } from "@/features/admin/users/user/components/UserImage";
 import { getUserDetails } from "@/features/admin/users/user/server/db/get-user-details";
+import { getUserWorkouts } from "@/features/admin/users/user/server/db/get-user-workouts";
+
 import Loading from "./loading";
 
 import styles from './User.module.css'
@@ -19,35 +21,31 @@ const Page = async ({ params }: { params: Promise<{ userId: string }> }) => {
   const { userId } = await params;
 
   let userDetails;
+  let workouts;
+
   try {
-    userDetails = await getUserDetails(userId);
+    [userDetails, workouts] = await Promise.all([
+      getUserDetails(userId),
+      getUserWorkouts(userId)
+    ]);
   } catch (error) {
-    console.error("Error fetching user details:", error);
-    notFound();  // Handle errors and show not found page if data is missing
+    console.error("Error fetching data:", error);
+    notFound();
   }
 
   if (!userDetails) {
-    notFound();  // Additional fallback for missing details
+    notFound();
   }
 
   const { personalDetails, medicalInquiries } = userDetails;
 
-  // Example workout plans (replace with dynamic fetch if needed)
-  const workoutPlans = [
-    {
-      workoutNumber: 1,
-      createdDate: '2025-01-10',
-      expireDate: '2025-01-20',
-      isExpired: false,
-    },
-    {
-      workoutNumber: 2,
-      createdDate: '2025-01-01',
-      expireDate: '2025-01-10',
-      isExpired: true,
-    },
-    // Add more workout plans here...
-  ];
+  // Transform workouts data for the WorkoutTable
+  const workoutPlans = workouts.map(workout => ({
+    workoutNumber: workout.workoutNumber,
+    createdDate: workout.createdAt.toISOString().split('T')[0],
+    status: workout.status,
+    id: workout.id
+  }));
 
   return (
     <Suspense fallback={<Loading />}>
@@ -60,10 +58,15 @@ const Page = async ({ params }: { params: Promise<{ userId: string }> }) => {
             <PersonalDetails personalDetails={personalDetails} />
             <MedicalInquiries medicalInquiries={medicalInquiries} />
           </div>
-          <Button asChild size="sm">
-            <Link href={`/admin/workout/create/${userId}`}>Create Workout</Link>
-          </Button>
-          <WorkoutTable workoutPlans={workoutPlans} />
+          <div className="md:col-span-3">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Workout Plans</h2>
+              <Button asChild size="sm">
+                <Link href={`/admin/workout/create/${userId}`}>Create Workout</Link>
+              </Button>
+            </div>
+            <WorkoutTable workoutPlans={workoutPlans} />
+          </div>
         </div>
       </div>
     </Suspense>

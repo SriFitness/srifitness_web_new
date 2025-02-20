@@ -104,6 +104,10 @@ const data = {
           title: "General",
           url: "/admin/users",
         },
+        {
+          title: "Attendance",
+          url: "/admin/users/attendance",
+        },
       ],
     },
     {
