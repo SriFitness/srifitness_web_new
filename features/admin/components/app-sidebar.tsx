@@ -16,7 +16,8 @@ import {
   Dumbbell,
   CreditCard,
   Store,
-  Radio
+  Radio,
+  QrCode,
 } from "lucide-react"
 
 import { NavMain } from "@/features/admin/components/nav-main"
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import { useAuth } from "@/components/providers/auth-provider"
+import { title } from "process"
 
 // This is sample data.
 const data = {
@@ -104,10 +106,6 @@ const data = {
           title: "General",
           url: "/admin/users",
         },
-        {
-          title: "Attendance",
-          url: "/admin/users/attendance",
-        },
       ],
     },
     {
@@ -150,6 +148,17 @@ const data = {
         },
       ],
     },
+    {
+      title: "Attendance",
+      url: "/admin/attendance",
+      icon: QrCode,
+      items: [
+        {
+          title: "QR",
+          url: "/admin/users/attendance",
+        },
+      ],
+    }
   ],
   projects: [
     {

@@ -19,7 +19,6 @@ export async function GET(
             try {
                 user = await auth.verifyIdToken(authToken);
             } catch (error) {
-                console.log("auth or auth token")
                 // One possible error is the token being expired, return forbidden
                 console.log(error);
             }

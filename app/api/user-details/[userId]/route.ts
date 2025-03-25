@@ -20,7 +20,7 @@ export async function GET(
             return new NextResponse("Unauthorized: Missing auth token", { status: 401 });
         }
 
-        const verifyAdmin = await fetch(`${request.nextUrl.origin}/api/auth/verify-admin`, {
+        const verifyAdmin = await fetch(`${request.nextUrl.origin}/api/auth/verify-admin-subadmin`, {
             headers: {
                 Authorization: `Bearer ${authToken}`,
             },
@@ -34,8 +34,8 @@ export async function GET(
 
         const { role } = await verifyAdmin.json();
 
-        if (role !== "admin") {
-            return new NextResponse("Forbidden: Only admins and users can access user data", { status: 403 });
+        if (role !== "subadmin" && role !== "admin") {
+            return new NextResponse("Forbidden: Only admins, subadmins and users can access user data", { status: 403 });
         }
 
         const userDoc = await firestore
@@ -52,14 +52,9 @@ export async function GET(
 
         // Get user data and check the role
         const userData = userDoc.data();
-        if (!userData || !userData.role) {
+        if (!userData) {
             return NextResponse.json({ role: 'user' }, { status: 200 }); // Default role is "user"
         }
-
-        // Only admin or user can delete user info
-        // const valid = user?.uid === userId || userData.role === 'admin';
-        const valid = userData.role === 'admin';
-        if (!valid) return new NextResponse("Unauthorized", { status: 401 });
 
         return NextResponse.json(userData, { status: 200 });
 

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     const userInfo = await userInfoResponse.json()
 
-    if (userInfo.role !== 'admin') {
+    if (userInfo.role !== 'admin' && userInfo.role !== 'subadmin') {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 

@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/admin')) {
     try {
       // Verify admin status using an API route
-      const verifyResponse = await fetch(`${request.nextUrl.origin}/api/auth/verify-admin`, {
+      const verifyResponse = await fetch(`${request.nextUrl.origin}/api/auth/verify-admin-subadmin`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
 
       // Check for restricted subadmin routes
       if (role === 'subadmin') {
-        const restrictedRoutes = ['/admin/users', '/admin/workout', '/admin/marketplace']
+        const restrictedRoutes = ['/admin/workout', '/admin/marketplace']
         if (restrictedRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
           return NextResponse.redirect(new URL('/admin/unauthorized', request.url))
         }

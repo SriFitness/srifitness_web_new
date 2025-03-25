@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft} from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import Cookies from 'js-cookie'
@@ -29,7 +28,24 @@ interface Product {
   productId: string
 }
 
-export default function EditProductPage() {
+interface FormData {
+  description: string
+  name: string
+  price: number
+  quantity: number
+  discount: number
+  productId?: string
+  category?: string
+  pitch?: string
+  brand?: string
+  dimensions?: string
+  weight?: string
+  manufacturer?: string
+  images?: string[]
+  thumbnail?: string
+}
+
+const EditProductPage = () => {
   const params = useParams()
   const router = useRouter()
   const productId = params.productId as string
@@ -63,7 +79,7 @@ export default function EditProductPage() {
     fetchProduct()
   }, [productId])
 
-  const handleSubmit = async (updatedProduct: any) => {
+  const handleSubmit = async (formData: FormData) => {
     try {
       const response = await fetch(`/api/products/${productId}`, {
         method: 'PUT',
@@ -71,7 +87,10 @@ export default function EditProductPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${Cookies.get('firebaseIdToken')}`,
         },
-        body: JSON.stringify(updatedProduct),
+        body: JSON.stringify({
+          ...formData,
+          id: product?.id // Include the id from existing product
+        }),
       })
       
       if (!response.ok) {
@@ -134,3 +153,5 @@ export default function EditProductPage() {
     </div>
   )
 }
+
+export default EditProductPage

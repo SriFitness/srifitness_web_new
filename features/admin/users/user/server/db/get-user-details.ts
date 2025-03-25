@@ -18,17 +18,19 @@ export async function getUserDetails(userId: string) {
   const medicalInquiriesRef = userDocRef.collection('medical-inquiries');
   const personalDetailsRef = userDocRef.collection('personal-details');
 
-  // Fetch documents from subcollections in parallel
-  const [medicalInquiriesDoc, personalDetailsDoc] = await Promise.all([
-    medicalInquiriesRef.doc('zYRoxqzVZmL6EFkzaUTm').get(),
-    personalDetailsRef.doc('info').get(),
-  ]);
+  // Get the first document from medical-inquiries collection
+  const medicalInquiriesSnapshot = await medicalInquiriesRef.limit(1).get();
+  const medicalInquiriesDoc = medicalInquiriesSnapshot.empty ? null : medicalInquiriesSnapshot.docs[0];
+  
+  // Fetch personal details document
+  const personalDetailsDoc = await personalDetailsRef.doc('info').get();
+  
   console.log("data");
-  console.log(medicalInquiriesDoc.data());
+  console.log(medicalInquiriesDoc?.data());
   console.log(personalDetailsDoc.data());
 
   return {
-    medicalInquiries: medicalInquiriesDoc.exists ? medicalInquiriesDoc.data() : null,
+    medicalInquiries: medicalInquiriesDoc ? medicalInquiriesDoc.data() : null,
     personalDetails: personalDetailsDoc.exists ? personalDetailsDoc.data() : null,
   };
 }
