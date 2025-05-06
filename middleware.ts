@@ -87,6 +87,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/sign-in', request.url))
     }
   }
+  
+  // For settings page - require authentication
+  if (request.nextUrl.pathname.startsWith('/settings')) {
+    return NextResponse.next()
+  }
 
   // For non-admin routes, continue
   return NextResponse.next()
@@ -97,7 +102,8 @@ export const config = {
     '/api/socket',
     '/admin/:path*',
     '/user/:path*',
-    '/unauthorized'
+    '/unauthorized',
+    '/settings'
   ]
 }
 
