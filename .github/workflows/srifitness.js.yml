@@ -12,11 +12,19 @@ jobs:
     
         steps:
         - uses: actions/checkout@v2
-        - name: Use Node.js ${{ matrix.node-version }}
+        - name: Use Node.js
           uses: actions/setup-node@v2
           with:
-            node-version: ${{ matrix.node-version }}
+            node-version: '20' # Specify a version that matches your project
         - run: node -v
         - run: npm -v
-        - run: |
-            npm install
+        - name: Install dependencies
+          run: npm install
+        - name: Build application
+          run: npm run build
+        - name: Start the application
+          run: |
+            # Kill any existing process on port 5000 (if needed)
+            # pkill -f "node app.js" || true
+            # Start the server in the background
+            nohup node app.js > app.log 2>&1 &
