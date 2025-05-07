@@ -14,7 +14,7 @@ const currentApps = getApps();
 if (currentApps.length === 0) {
     // Check if environment variables are available
     if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
-        // Use environment variables
+        // Use environment variables//
         const app = initializeApp({
             credential: cert({
                 projectId: process.env.FIREBASE_PROJECT_ID,
