@@ -31,9 +31,14 @@ jobs:
 
         - name: Stop existing application 
           run: | 
-            if netstat -ano | findstr :5000 > nul; then 
-              for /f "tokens=5" %a in ('netstat -ano ^| findstr :5000') do taskkill /F /PID %a 
-            fi
+            netstat -ano | findstr :5000 > nul 2>&1
+            if %errorlevel% equ 0 (
+              for /f "tokens=5" %%a in ('netstat -ano ^| findstr :5000') do (
+                taskkill /F /PID %%a
+              )
+            ) else (
+              echo No process found running on port 5000
+            )
           continue-on-error: true
 
         - name: Start the application
