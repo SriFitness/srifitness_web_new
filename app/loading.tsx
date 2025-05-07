@@ -8,7 +8,7 @@ export default function Loading() {
         src={loadingGif} 
         alt="Loading..." 
         width={250} // Adjust width as needed
-        height={250} // Adjust height as needed
+        height={250} // Adjust height as needed!
       />
     </div>
   );
