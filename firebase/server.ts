@@ -30,26 +30,9 @@ if (currentApps.length === 0) {
         storage = getStorage(app);
         realtimeDB = getDatabase(app);
     } else {
-        // Fallback to local file for development
-        try {
-            // Use dynamic import with import() instead of require()
-            import('./serviceAccount.json').then((serviceAccount) => {
-                const app = initializeApp({
-                    credential: cert(serviceAccount.default as ServiceAccount),
-                    storageBucket: "srifitness-96c1b.firebasestorage.app",
-                    databaseURL: "https://srifitness-96c1b-default-rtdb.asia-southeast1.firebasedatabase.app/",
-                });
-    
-                firestore = getFirestore(app);
-                auth = getAuth(app);
-                storage = getStorage(app);
-                realtimeDB = getDatabase(app);
-            }).catch(error => {
-                console.error("Failed to initialize Firebase:", error);
-            });
-        } catch (error) {
-            console.error("Failed to initialize Firebase:", error);
-        }
+        // If environment variables are not available, log an error
+        console.error("Firebase environment variables are missing. Firebase services will not be available.");
+        console.error("Please set FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL environment variables.");
     }
 } else {
     const app = currentApps[0];
