@@ -18,16 +18,28 @@ jobs:
             node-version: '20' # Specify a version that matches your project
         - run: node -v
         - run: npm -v
+
         - name: Install dependencies
           run: npm install --legacy-peer-deps
+
         - name: Build application
+          env:
+            FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+            FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+            FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
           run: npm run build
+
         - name: Stop existing application 
           run: | 
             if netstat -ano | findstr :5000 > nul; then 
               for /f "tokens=5" %a in ('netstat -ano ^| findstr :5000') do taskkill /F /PID %a 
             fi
           continue-on-error: true
+
         - name: Start the application
+          env:
+            FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+            FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+            FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
           run: | 
             start /B npm run start > app.log 2>&1
