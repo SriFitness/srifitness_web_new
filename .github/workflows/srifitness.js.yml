@@ -30,21 +30,22 @@ jobs:
           run: npm run build
 
         - name: Stop existing application 
-          run: | 
-            netstat -ano | findstr :5000 > nul 2>&1
-            if %errorlevel% equ 0 (
-              for /f "tokens=5" %%a in ('netstat -ano ^| findstr :5000') do (
-                taskkill /F /PID %%a
-              )
-            ) else (
-              echo No process found running on port 5000
-            )
+          run: |
+            pid=$(lsof -t -i:5000 2>/dev/null)
+            if [ -n "$pid" ]; then
+              echo "Killing process on port 5000: $pid"
+              kill -9 $pid || true
+            else
+              echo "No process found running on port 5000"
+            fi
           continue-on-error: true
+          shell: bash
 
         - name: Start the application
           env:
             FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
             FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
             FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
-          run: | 
-            start /B npm run start > app.log 2>&1
+          run: |
+            nohup npm run start > app.log 2>&1 &
+          shell: bash
