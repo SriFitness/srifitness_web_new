@@ -19,16 +19,23 @@ export function getAuthToken(): string | undefined {
 
 export function setAuthToken(token: string): void {
     const expirationTime = new Date(new Date().getTime() + TOKEN_EXPIRATION_TIME);
-    Cookies.set("firebaseIdToken", token, {
+    
+    // Cookie options
+    const cookieOptions = {
         expires: expirationTime,
-        secure: true,
-        sameSite: 'strict'
-    });
-    Cookies.set("tokenExpiration", expirationTime.getTime().toString(), {
-        expires: expirationTime,
-        secure: true,
-        sameSite: 'strict'
-    });
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax' as const
+    };
+    
+    // Add domain for production environment
+    if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+        // Use the current hostname (IP or domain)
+        const hostname = window.location.hostname;
+        Object.assign(cookieOptions, { domain: hostname });
+    }
+    
+    Cookies.set("firebaseIdToken", token, cookieOptions);
+    Cookies.set("tokenExpiration", expirationTime.getTime().toString(), cookieOptions);
 }
 
 
