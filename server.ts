@@ -50,9 +50,10 @@ app.prepare().then(() => {
     })
   })
 
-  const PORT = process.env.PORT || 3000
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`> Ready on http://0.0.0.0:${PORT}`)
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
+  const hostname = '0.0.0.0'
+  server.listen(PORT, hostname, () => {
+    console.log(`> Ready on http://${hostname}:${PORT}`)
   })
 })
 
