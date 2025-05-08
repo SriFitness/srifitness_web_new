@@ -12,7 +12,12 @@ type dataType = {
 
 export const createUser = async (data: dataType) => {
   try {
-    const response = await fetch('/api/users/create-user', {
+    // Get the base URL dynamically based on environment
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? window.location.origin  // This will use the current domain in production
+      : '';
+    
+    const response = await fetch(`${baseUrl}/api/users/create-user`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
