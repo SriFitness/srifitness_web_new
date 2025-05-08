@@ -31,13 +31,7 @@ jobs:
 
         - name: Stop existing application 
           run: |
-            pid=$(lsof -t -i:5000 2>/dev/null)
-            if [ -n "$pid" ]; then
-              echo "Killing process on port 5000: $pid"
-              kill -9 $pid || true
-            else
-              echo "No process found running on port 5000"
-            fi
+           pm2 delete srifitnesswebsite || true
           continue-on-error: true
           shell: bash
 
