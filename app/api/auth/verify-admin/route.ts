@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch user info
     const userInfoResponse = await fetch(
-      `${process.env.API_URL}/api/users/${decodedToken?.uid}`,
+      `${request.nextUrl.origin}/api/users/${decodedToken?.uid}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
