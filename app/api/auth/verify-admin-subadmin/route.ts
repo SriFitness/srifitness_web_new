@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
     const token = authHeader.split('Bearer ')[1]
     const decodedToken = await auth?.verifyIdToken(token)
 
-    // Fetch user info
+    // Use request.nextUrl.origin instead of process.env.API_URL
     const userInfoResponse = await fetch(
-      `${process.env.API_URL}/api/users/${decodedToken?.uid}`,
+      `${request.nextUrl.origin}/api/users/${decodedToken?.uid}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     )
 
     if (!userInfoResponse.ok) {
+      console.error('User info response not OK:', await userInfoResponse.text());
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
