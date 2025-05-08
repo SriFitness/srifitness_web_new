@@ -19,29 +19,32 @@ export function getAuthToken(): string | undefined {
 
 export function setAuthToken(token: string): void {
     const expirationTime = new Date(new Date().getTime() + TOKEN_EXPIRATION_TIME);
-    
-    // Cookie options
+
+    // Cookie options for HTTP sites
     const cookieOptions = {
         expires: expirationTime,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax' as const
+        secure: false,
+        sameSite: 'lax' as const,  // Use 'lax' instead of 'none' for HTTP
+        path: '/'
     };
-    
-    // Add domain for production environment
-    if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
-        // Use the current hostname (IP or domain)
-        const hostname = window.location.hostname;
-        Object.assign(cookieOptions, { domain: hostname });
-    }
+
+    // Log for debugging
+    console.log("Setting cookies with options:", cookieOptions);
     
     Cookies.set("firebaseIdToken", token, cookieOptions);
     Cookies.set("tokenExpiration", expirationTime.getTime().toString(), cookieOptions);
 }
 
-
 export function removeAuthToken(): void {
-    Cookies.remove("firebaseIdToken");
-    Cookies.remove("tokenExpiration");
+    // Use the same options when removing cookies
+    const options = {
+        path: '/',
+        secure: false,
+        sameSite: 'lax' as const
+    };
+    
+    Cookies.remove("firebaseIdToken", options);
+    Cookies.remove("tokenExpiration", options);
 }
 
 export function isTokenExpired(): boolean {
@@ -79,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setCurrentUser(user);
             setIsLogged(!!user);
             setLoading(false);
-            if(loading){}
+            if (loading) { }
 
             if (user) {
                 try {
@@ -118,7 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
 
         return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -138,25 +141,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, [isLogged, currentUser, toast, router]);
 
     const loginEmail = async ({ email, password }: { email: string; password: string }): Promise<boolean> => {
-        
+
         try {
-            if(!auth) throw new Error("Firebase is not initialized!!!")
+            if (!auth) throw new Error("Firebase is not initialized!!!")
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             const token = await user.getIdToken(true);
             setAuthToken(token);
             setIsLogged(true);
             return true;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("Login error:", error);
             throw new Error(`Error ${error.code}: ${error.message}`);
         }
     };
-    
+
     const logout = async (): Promise<void> => {
         try {
-            if(!auth) throw new Error("Firebase is not initialized!!!")
+            if (!auth) throw new Error("Firebase is not initialized!!!")
             await signOut(auth);
             setIsLogged(false);
             setCurrentUser(null);
