@@ -27,22 +27,17 @@ jobs:
             FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
             FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
             FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+            API_URL: ${{ secrets.API_URL }}
           run: npm run build
-
-        - name: Stop existing application 
-          run: |
-           pm2 delete srifitnesswebsite || true
-          continue-on-error: true
-          shell: bash
 
         - name: Start the application
           env:
             FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
             FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
             FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+            API_URL: ${{ secrets.API_URL }}
           run: | 
-            pm2 delete srifitnesswebsite || true 
-            pm2 start npm --name "srifitnesswebsite" -- run start \
-              --env-json '{"FIREBASE_PROJECT_ID":"${{ secrets.FIREBASE_PROJECT_ID }}","FIREBASE_CLIENT_EMAIL":"${{ secrets.FIREBASE_CLIENT_EMAIL }}","FIREBASE_PRIVATE_KEY":"${{ secrets.FIREBASE_PRIVATE_KEY }}"}' 
-            pm2 save 
+            pm2 stop 0
+            pm2 start 0
+            pm2 save
           shell: bash
