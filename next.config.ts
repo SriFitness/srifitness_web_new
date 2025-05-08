@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
         hostname: 'storage.googleapis.com',
       },
     ],
+    domains: [
+      'firebasestorage.googleapis.com',
+    ],
   },
   async headers() {
     return [

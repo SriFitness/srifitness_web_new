@@ -1,6 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import mobile_app_download_image from '@/public/mobile_app_download_image.png'
+import Image from 'next/image'
 
 export default function MobileAppShowcase() {
   return (
@@ -8,13 +10,17 @@ export default function MobileAppShowcase() {
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap items-center">
           <div className="w-full md:w-1/2 mb-12 md:mb-0">
-            <motion.img
+            <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              alt="Mobile App Screenshot"
-              className="mx-auto rounded-3xl shadow-2xl"
-            />
+            >
+              <Image
+                src={mobile_app_download_image}
+                alt="Mobile App Screenshot"
+                className="mx-auto rounded-3xl shadow-2xl"
+              />
+            </motion.div>
           </div>
           <div className="w-full md:w-1/2">
             <motion.h2

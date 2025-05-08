@@ -162,7 +162,7 @@ const data = {
   ],
   projects: [
     {
-      name: "Design Engineering",
+      name: "Recent",
       url: "#",
       icon: Frame,
     },

@@ -52,13 +52,11 @@ async function uploadFile(file: File, path: string): Promise<string> {
                 .on("error", reject);
         });
 
-        // Generate a signed URL for access
-        const [url] = await fileRef.getSignedUrl({
-            action: "read",
-            expires: "03-01-2500", // Adjust expiration as needed
-        });
-
-        return url;
+        // Use getDownloadURL instead of getSignedUrl
+        const [metadata] = await fileRef.getMetadata();
+        const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(path)}?alt=media&token=${metadata.md5Hash}`;
+        
+        return downloadUrl;
     } catch (error) {
         console.error("Error uploading file:", error);
         throw new Error("Failed to upload file to Firebase Storage.");
