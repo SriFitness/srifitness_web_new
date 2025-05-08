@@ -17,8 +17,23 @@ import { WorkoutList } from './WorkoutList'
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
+// Add this function to generate a UUID when crypto.randomUUID is not available
+const generateUUID = (): string => {
+  // Check if crypto.randomUUID is available
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  
+  // Fallback implementation
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 const createEmptyExercise = (): Exercise => ({
-  id: crypto.randomUUID(),
+  id: generateUUID(),
   bodyPart: '',
   subPart: '',
   exercise: '',
@@ -27,7 +42,7 @@ const createEmptyExercise = (): Exercise => ({
 })
 
 const createEmptyGroup = (day: string): WorkoutGroup => ({
-  id: crypto.randomUUID(),
+  id: generateUUID(),
   bodyPart: '',
   exercises: [createEmptyExercise()],
   day,
